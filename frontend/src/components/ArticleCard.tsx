@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { colors } from '../theme';
 import type { Article } from '../types';
 
@@ -16,7 +16,15 @@ export function ArticleCard({
   return (
     <Pressable style={styles.row} onPress={onPress}>
       <View style={[styles.thumb, { backgroundColor: article.accent }]}>
-        <Text style={styles.thumbLabel}>{article.imageLabel}</Text>
+        {article.imageUrl ? (
+          <Image
+            source={{ uri: article.imageUrl }}
+            style={styles.thumbImage}
+            resizeMode="cover"
+          />
+        ) : (
+          <Text style={styles.thumbLabel}>{article.imageLabel}</Text>
+        )}
       </View>
       <View style={styles.copy}>
         <Text style={styles.category}>{article.category}</Text>
@@ -51,7 +59,11 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 10,
+    overflow: 'hidden',
+  },
+  thumbImage: {
+    width: '100%',
+    height: '100%',
   },
   thumbLabel: {
     color: colors.white,
