@@ -12,6 +12,10 @@ export type Article = {
   cards: string[];
   suggestions: string[];
   source: string;
+  content?: string;
+  imageUrl?: string | null;
+  sourceUrl?: string;
+  publishedAt?: string;
 };
 
 export type Message = {

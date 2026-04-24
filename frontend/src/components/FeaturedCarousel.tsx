@@ -1,4 +1,4 @@
-import { Dimensions, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Dimensions, FlatList, Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { colors } from '../theme';
 import type { Article } from '../types';
 
@@ -22,14 +22,19 @@ export function FeaturedCarousel({
       contentContainerStyle={styles.list}
       renderItem={({ item }) => (
         <Pressable style={[styles.card, { backgroundColor: item.accent }]} onPress={() => onPressArticle(item.id)}>
+          {item.imageUrl ? (
+            <Image
+              source={{ uri: item.imageUrl }}
+              style={styles.image}
+              resizeMode="cover"
+            />
+          ) : null}
           <View style={styles.shade} />
-          <Text style={styles.kicker}>{item.subtitle}</Text>
-          <Text style={styles.headline} numberOfLines={2}>
-            {item.headline}
-          </Text>
-          <Text style={styles.summary} numberOfLines={3}>
-            {item.summary}
-          </Text>
+          <View style={styles.content}>
+            <Text style={styles.headline}>
+              {item.headline}
+            </Text>
+          </View>
         </Pressable>
       )}
     />
@@ -42,16 +47,24 @@ const styles = StyleSheet.create({
   },
   card: {
     width: width - 72,
-    height: 220,
+    height: 260,
     borderRadius: 28,
     marginRight: 16,
-    padding: 22,
     justifyContent: 'flex-end',
     overflow: 'hidden',
   },
+  image: {
+    ...StyleSheet.absoluteFillObject,
+    width: '100%',
+    height: '100%',
+  },
   shade: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(35, 19, 8, 0.18)',
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+  },
+  content: {
+    padding: 22,
+    paddingBottom: 24,
   },
   kicker: {
     color: '#FFF4EB',
@@ -61,10 +74,10 @@ const styles = StyleSheet.create({
   },
   headline: {
     color: '#FFFDFC',
-    fontSize: 24,
-    lineHeight: 28,
+    fontSize: 20,
+    lineHeight: 24,
     fontWeight: '800',
-    letterSpacing: -0.8,
+    letterSpacing: -0.7,
   },
   summary: {
     color: '#FFF5EE',

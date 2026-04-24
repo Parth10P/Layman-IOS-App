@@ -1,8 +1,9 @@
 import { createContext, useContext, useMemo, useState, type ReactNode } from 'react';
-import { articles } from '../data/articles';
-import type { Message } from '../types';
+import type { Article, Message } from '../types';
 
 type AppStateValue = {
+  feedArticles: Article[];
+  setFeedArticles: (articles: Article[]) => void;
   fullName: string;
   setFullName: (value: string) => void;
   email: string;
@@ -15,8 +16,20 @@ type AppStateValue = {
   sendMessage: (articleId: string, text: string) => void;
 };
 
-const starterMessages = (articleId: string): Message[] => {
-  const article = articles.find((entry) => entry.id === articleId) ?? articles[0];
+const getArticleById = (pool: Article[], articleId: string) =>
+  pool.find((entry) => entry.id === articleId) ?? pool[0] ?? null;
+
+const starterMessages = (pool: Article[], articleId: string): Message[] => {
+  const article = getArticleById(pool, articleId);
+  if (!article) {
+    return [
+      {
+        id: `assistant-empty-${articleId}`,
+        role: 'assistant',
+        text: "I'm ready once an article is loaded.",
+      },
+    ];
+  }
   return [
     {
       id: `assistant-${article.id}-1`,
@@ -26,8 +39,15 @@ const starterMessages = (articleId: string): Message[] => {
   ];
 };
 
-const articleResponse = (articleId: string, question: string) => {
-  const article = articles.find((entry) => entry.id === articleId) ?? articles[0];
+const articleResponse = (
+  pool: Article[],
+  articleId: string,
+  question: string,
+) => {
+  const article = getArticleById(pool, articleId);
+  if (!article) {
+    return "I can't answer that yet because the article details are not loaded.";
+  }
   const lower = question.toLowerCase();
 
   if (lower.includes('risk')) {
@@ -48,16 +68,17 @@ const articleResponse = (articleId: string, question: string) => {
 const AppStateContext = createContext<AppStateValue | null>(null);
 
 export function AppStateProvider({ children }: { children: ReactNode }) {
+  const [feedArticles, setFeedArticles] = useState<Article[]>([]);
   const [fullName, setFullName] = useState('Parth Kumar');
   const [email, setEmail] = useState('parth@example.com');
   const [password, setPassword] = useState('12345678');
-  const [savedIds, setSavedIds] = useState<string[]>(['2']);
-  const [chats, setChats] = useState<Record<string, Message[]>>(() =>
-    Object.fromEntries(articles.map((article) => [article.id, starterMessages(article.id)])),
-  );
+  const [savedIds, setSavedIds] = useState<string[]>([]);
+  const [chats, setChats] = useState<Record<string, Message[]>>({});
 
   const value = useMemo<AppStateValue>(
     () => ({
+      feedArticles,
+      setFeedArticles,
       fullName,
       setFullName,
       email,
@@ -84,16 +105,20 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
         const assistantMessage: Message = {
           id: `${articleId}-${Date.now()}-assistant`,
           role: 'assistant',
-          text: articleResponse(articleId, trimmed),
+          text: articleResponse(feedArticles, articleId, trimmed),
         };
 
         setChats((current) => ({
           ...current,
-          [articleId]: [...(current[articleId] ?? starterMessages(articleId)), userMessage, assistantMessage],
+          [articleId]: [
+            ...(current[articleId] ?? starterMessages(feedArticles, articleId)),
+            userMessage,
+            assistantMessage,
+          ],
         }));
       },
     }),
-    [chats, email, fullName, password, savedIds],
+    [chats, email, feedArticles, fullName, password, savedIds],
   );
 
   return <AppStateContext.Provider value={value}>{children}</AppStateContext.Provider>;

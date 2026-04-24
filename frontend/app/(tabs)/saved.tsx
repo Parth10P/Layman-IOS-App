@@ -3,14 +3,13 @@ import { useRouter } from 'expo-router';
 import { ArticleCard } from '../../src/components/ArticleCard';
 import { BottomTabBar } from '../../src/components/BottomTabBar';
 import { Screen } from '../../src/components/Screen';
-import { articles } from '../../src/data/articles';
 import { useAppState } from '../../src/state/app-state';
 import { colors } from '../../src/theme';
 
 export default function SavedTab() {
   const router = useRouter();
-  const { savedIds, toggleSaved } = useAppState();
-  const savedArticles = articles.filter((article) => savedIds.includes(article.id));
+  const { feedArticles, savedIds, toggleSaved } = useAppState();
+  const savedArticles = feedArticles.filter((article) => savedIds.includes(article.id));
 
   return (
     <Screen>

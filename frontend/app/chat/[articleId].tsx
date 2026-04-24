@@ -1,21 +1,87 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { askLayman, generateChatSuggestions } from '../../src/lib/api';
 import { ChatBubble } from '../../src/components/ChatBubble';
 import { Screen } from '../../src/components/Screen';
-import { articles } from '../../src/data/articles';
 import { useAppState } from '../../src/state/app-state';
 import { colors } from '../../src/theme';
-import type { TabKey } from '../../src/types';
+import type { TabKey, Message } from '../../src/types';
 
 export default function ChatScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{ articleId?: string; from?: string }>();
-  const article = articles.find((entry) => entry.id === params.articleId) ?? articles[0];
+  const { feedArticles, toggleSaved } = useAppState();
+  const article = feedArticles.find((entry) => entry.id === params.articleId) ?? null;
   const from = (params.from as TabKey | undefined) ?? 'home';
-  const { chats, sendMessage } = useAppState();
   const [input, setInput] = useState('');
-  const messages = chats[article.id] ?? [];
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [suggestions, setSuggestions] = useState<string[]>(article?.suggestions || []);
+  const [isLoadingResponse, setIsLoadingResponse] = useState(false);
+  const [chatHistory, setChatHistory] = useState<{ role: string; content: string }[]>([]);
+
+  useEffect(() => {
+    if (!article) return;
+
+    const loadSuggestions = async () => {
+      const newSuggestions = await generateChatSuggestions(article);
+      setSuggestions(newSuggestions);
+    };
+
+    setMessages([{
+      id: `assistant-${article.id}-1`,
+      role: 'assistant',
+      text: `Hi, I'm Layman. Ask me anything about "${article.headline}".`,
+    }]);
+    setChatHistory([]);
+    loadSuggestions();
+  }, [article?.id]);
+
+  const handleSend = async (text: string) => {
+    const trimmed = text.trim();
+    if (!trimmed || !article || isLoadingResponse) return;
+
+    const userMessage: Message = {
+      id: `${article.id}-${Date.now()}-user`,
+      role: 'user',
+      text: trimmed,
+    };
+
+    setMessages((current) => [...current, userMessage]);
+    setIsLoadingResponse(true);
+
+    const response = await askLayman(article, trimmed, chatHistory);
+
+    const assistantMessage: Message = {
+      id: `${article.id}-${Date.now()}-assistant`,
+      role: 'assistant',
+      text: response,
+    };
+
+    setMessages((current) => [...current, assistantMessage]);
+    setChatHistory((current) => [...current, { role: 'user', content: trimmed }, { role: 'assistant', content: response }]);
+    setIsLoadingResponse(false);
+    setInput('');
+  };
+
+  if (!article) {
+    return (
+      <Screen>
+        <View style={styles.missingState}>
+          <Text style={styles.title}>Ask Layman</Text>
+          <Text style={styles.missingText}>
+            Chat is unavailable because the selected article is not loaded in the live feed.
+          </Text>
+          <Pressable
+            style={styles.sendButton}
+            onPress={() => router.replace(from === 'home' ? '/(tabs)' : `/(tabs)/${from}`)}
+          >
+            <Text style={styles.sendButtonText}>Back to feed</Text>
+          </Pressable>
+        </View>
+      </Screen>
+    );
+  }
 
   return (
     <Screen>
@@ -36,11 +102,11 @@ export default function ChatScreen() {
 
       <ScrollView contentContainerStyle={styles.scroll}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow}>
-          {article.suggestions.map((suggestion) => (
+          {suggestions.map((suggestion) => (
             <Pressable
               key={suggestion}
               style={styles.chip}
-              onPress={() => sendMessage(article.id, suggestion)}
+              onPress={() => handleSend(suggestion)}
             >
               <Text style={styles.chipText}>{suggestion}</Text>
             </Pressable>
@@ -50,6 +116,13 @@ export default function ChatScreen() {
         {messages.map((message) => (
           <ChatBubble key={message.id} message={message} />
         ))}
+
+        {isLoadingResponse ? (
+          <View style={styles.loadingBox}>
+            <ActivityIndicator color={colors.primaryDark} />
+            <Text style={styles.loadingText}>Layman is thinking...</Text>
+          </View>
+        ) : null}
       </ScrollView>
 
       <View style={styles.composer}>
@@ -59,13 +132,11 @@ export default function ChatScreen() {
           placeholder="Ask about this story"
           placeholderTextColor={colors.muted}
           style={styles.input}
+          onSubmitEditing={() => handleSend(input)}
         />
         <Pressable
           style={styles.sendButton}
-          onPress={() => {
-            sendMessage(article.id, input);
-            setInput('');
-          }}
+          onPress={() => handleSend(input)}
         >
           <Text style={styles.sendButtonText}>Send</Text>
         </Pressable>
@@ -82,6 +153,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingTop: 18,
     paddingBottom: 14,
+  },
+  missingState: {
+    flex: 1,
+    paddingHorizontal: 24,
+    justifyContent: 'center',
   },
   iconButton: {
     width: 38,
@@ -161,5 +237,29 @@ const styles = StyleSheet.create({
     color: colors.white,
     fontSize: 14,
     fontWeight: '800',
+  },
+  missingText: {
+    color: colors.muted,
+    fontSize: 15,
+    lineHeight: 22,
+    marginVertical: 16,
+  },
+  loadingBox: {
+    backgroundColor: colors.surface,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    marginBottom: 18,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  loadingText: {
+    color: colors.muted,
+    fontSize: 13,
+    lineHeight: 18,
+    flex: 1,
   },
 });
