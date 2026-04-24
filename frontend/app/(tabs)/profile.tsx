@@ -1,4 +1,5 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { BottomTabBar } from '../../src/components/BottomTabBar';
 import { Screen } from '../../src/components/Screen';
@@ -17,7 +18,7 @@ export default function ProfileTab() {
 
         <View style={styles.profileCard}>
           <View style={styles.avatar}>
-            <Text style={styles.avatarText}>PK</Text>
+            <Ionicons name="person" size={40} color={colors.white} />
           </View>
           <Text style={styles.name}>{fullName}</Text>
           <Text style={styles.email}>{email}</Text>
@@ -82,11 +83,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 18,
-  },
-  avatarText: {
-    color: colors.white,
-    fontSize: 24,
-    fontWeight: '800',
   },
   name: {
     color: colors.text,

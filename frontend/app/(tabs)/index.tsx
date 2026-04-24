@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { Ionicons } from '@expo/vector-icons';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ArticleCard } from '../../src/components/ArticleCard';
@@ -67,7 +68,7 @@ export default function HomeTab() {
             <Text style={styles.greeting}>Business, tech & startups made simple</Text>
           </View>
           <View style={styles.avatar}>
-            <Text style={styles.avatarText}>PK</Text>
+            <Ionicons name="person" size={24} color={colors.white} />
           </View>
         </View>
 
@@ -159,10 +160,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primaryDark,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  avatarText: {
-    color: colors.white,
-    fontWeight: '800',
   },
   sectionTitle: {
     color: colors.text,

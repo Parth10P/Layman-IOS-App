@@ -1,4 +1,5 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { colors } from '../theme';
 import type { TabKey } from '../types';
@@ -6,9 +7,9 @@ import type { TabKey } from '../types';
 const tabs: TabKey[] = ['home', 'saved', 'profile'];
 
 const iconForTab = (tab: TabKey) => {
-  if (tab === 'home') return 'H';
-  if (tab === 'saved') return 'S';
-  return 'P';
+  if (tab === 'home') return 'home';
+  if (tab === 'saved') return 'bookmark';
+  return 'person';
 };
 
 const labelForTab = (tab: TabKey) => {
@@ -29,7 +30,11 @@ export function BottomTabBar({ activeTab }: { activeTab: TabKey }) {
         return (
           <Pressable key={tab} style={styles.item} onPress={() => router.replace(href)}>
             <View style={[styles.icon, active && styles.iconActive]}>
-              <Text style={[styles.iconText, active && styles.iconTextActive]}>{iconForTab(tab)}</Text>
+              <Ionicons
+                name={iconForTab(tab)}
+                size={20}
+                color={active ? colors.white : colors.primaryDark}
+              />
             </View>
             <Text style={[styles.label, active && styles.labelActive]}>{labelForTab(tab)}</Text>
           </Pressable>
@@ -72,14 +77,6 @@ const styles = StyleSheet.create({
   },
   iconActive: {
     backgroundColor: colors.primaryDark,
-  },
-  iconText: {
-    color: colors.primaryDark,
-    fontSize: 12,
-    fontWeight: '800',
-  },
-  iconTextActive: {
-    color: colors.white,
   },
   label: {
     color: colors.muted,
