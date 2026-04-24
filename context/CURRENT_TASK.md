@@ -6,6 +6,28 @@ Establish a durable AI project context system and stabilize the codebase for con
 
 ## What Was Just Done
 
+### Session: Image and Icon Updates (2026-04-25)
+
+1. **Featured Carousel Images** - Fixed `FeaturedCarousel.tsx` to display article images:
+   - Added `Image` component rendering `item.imageUrl` as background
+   - Increased card height (220 → 260) for better content visibility
+   - Added dark overlay for text readability
+
+2. **Article Card Thumbnails** - Updated `ArticleCard.tsx` to show images:
+   - Added `Image` component in thumbnail box
+   - Falls back to text label when no image available
+
+3. **Vector Icons Throughout App** - Installed `@expo/vector-icons` and updated:
+   - `BottomTabBar.tsx`: home, bookmark, person icons
+   - `profile.tsx`: person icon (40px) in avatar
+   - `index.tsx`: person icon (24px) in header
+
+4. **Documentation** - Updated `context/BUGS_AND_FIXES.md` with all fixes
+
+---
+
+### Previous Session
+
 - Merged the refactored Expo Router app from a worktree into the main project folder
 - Corrected route file names to Expo Router dynamic-route conventions:
   - `app/article/[id].tsx`

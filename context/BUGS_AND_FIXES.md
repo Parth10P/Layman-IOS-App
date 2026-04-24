@@ -6,6 +6,51 @@ This file tracks real issues discovered in the repository, fixes already applied
 
 ## Fixes Already Applied
 
+### 5. Featured carousel images not visible
+
+Problem:
+- `FeaturedCarousel` component was not rendering article images
+- Cards showed only text on colored backgrounds
+
+Fix applied:
+- Added `Image` component to render `item.imageUrl` as card background
+- Added dark overlay (`shade`) for text readability over images
+- Increased card height from 220 to 260 for better content visibility
+
+Impact:
+- Featured carousel now displays article images from NewsData API
+
+### 6. Article card thumbnails showing text instead of images
+
+Problem:
+- `ArticleCard` component displayed text label in thumbnail box instead of article images
+
+Fix applied:
+- Added `Image` component to render `article.imageUrl` in thumb container
+- Falls back to text label when no image available
+
+Impact:
+- "Today's Picks" list now shows article images in square thumbnails
+
+### 7. App-wide icons using text letters instead of vector icons
+
+Problem:
+- Bottom tab bar icons were text letters ("H", "S", "P")
+- Profile and home page avatars showed text initials ("PK")
+
+Fix applied:
+- Installed `@expo/vector-icons` package
+- Updated `BottomTabBar.tsx` to use Ionicons:
+  - Home: `home` icon
+  - Saved: `bookmark` icon
+  - Profile: `person` icon
+- Updated `profile.tsx` avatar to use `person` icon (40px)
+- Updated `index.tsx` header avatar to use `person` icon (24px)
+
+Impact:
+- Consistent vector icons throughout the app
+- Icons scale perfectly on all screen sizes
+
 ### 1. Wrong Expo Router dynamic route filenames
 
 Problem:
