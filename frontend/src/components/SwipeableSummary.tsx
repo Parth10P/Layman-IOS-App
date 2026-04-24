@@ -1,115 +1,76 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, Dimensions } from 'react-native';
-import Animated, { useSharedValue, useAnimatedScrollHandler } from 'react-native-reanimated';
+import { Dimensions, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { colors } from '../theme';
 
 const { width } = Dimensions.get('window');
 
-interface SwipeableSummaryProps {
-  cards: string[];
-}
-
-export const SwipeableSummary: React.FC<SwipeableSummaryProps> = ({ cards }) => {
-  const [currentIndex, setCurrentIndex] = useState(0);
-
-  const onScroll = (event: any) => {
-    const slideSize = event.nativeEvent.layoutMeasurement.width;
-    const index = event.nativeEvent.contentOffset.x / slideSize;
-    setCurrentIndex(Math.round(index));
-  };
-
-  if (!cards || cards.length === 0) {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.loadingText}>Simplifying article...</Text>
-      </View>
-    );
-  }
-
+export function SwipeableSummary({ cards }: { cards: string[] }) {
   return (
-    <View style={styles.container}>
-      <Animated.ScrollView
+    <View>
+      <ScrollView
         horizontal
         pagingEnabled
+        decelerationRate="fast"
         showsHorizontalScrollIndicator={false}
-        onScroll={onScroll}
-        scrollEventThrottle={16}
       >
         {cards.map((card, index) => (
-          <View key={index} style={styles.cardContainer}>
+          <View key={`${index}-${card.slice(0, 12)}`} style={styles.cardWrap}>
             <View style={styles.card}>
-              <Text style={styles.cardText}>{card}</Text>
+              <Text style={styles.count}>
+                {index + 1} / {cards.length}
+              </Text>
+              <Text style={styles.text} numberOfLines={6}>
+                {card}
+              </Text>
             </View>
           </View>
         ))}
-      </Animated.ScrollView>
-      
-      <View style={styles.pagination}>
+      </ScrollView>
+      <View style={styles.dots}>
         {cards.map((_, index) => (
-          <View 
-            key={index} 
-            style={[
-              styles.dot, 
-              currentIndex === index ? styles.activeDot : null
-            ]} 
-          />
+          <View key={index} style={[styles.dot, index === 0 && styles.dotActive]} />
         ))}
       </View>
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
-  container: {
-    height: 250,
-  },
-  cardContainer: {
-    width: width,
-    padding: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
+  cardWrap: {
+    width: width - 48,
+    paddingRight: 12,
   },
   card: {
-    backgroundColor: '#FDFBF7', // Cream color from mockup
-    borderRadius: 16,
-    padding: 24,
-    width: '100%',
-    height: '100%',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowOffset: { width: 0, height: 4 },
-    shadowRadius: 10,
-    elevation: 3,
+    backgroundColor: colors.surface,
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: colors.border,
+    padding: 18,
   },
-  cardText: {
-    fontSize: 18,
-    lineHeight: 28,
-    color: colors.darkText,
-    textAlign: 'center',
+  count: {
+    color: colors.primaryDark,
+    fontSize: 12,
+    fontWeight: '700',
+    marginBottom: 10,
   },
-  loadingText: {
-    textAlign: 'center',
-    marginTop: 50,
-    color: colors.mutedText,
+  text: {
+    color: colors.text,
+    fontSize: 16,
+    lineHeight: 24,
+    fontWeight: '600',
   },
-  pagination: {
+  dots: {
     flexDirection: 'row',
     justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 10,
+    gap: 8,
+    marginTop: 12,
   },
   dot: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#D9D9D9',
-    marginHorizontal: 4,
+    backgroundColor: colors.border,
   },
-  activeDot: {
+  dotActive: {
     backgroundColor: colors.primary,
-    width: 10,
-    height: 10,
-    borderRadius: 5,
   },
 });

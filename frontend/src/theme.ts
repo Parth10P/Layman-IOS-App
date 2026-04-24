@@ -1,8 +1,13 @@
 export const colors = {
-  primary: '#FFA500', // Warm orange/peach gradient start
-  secondary: '#FF7F50', // Warm orange/peach gradient end
-  accent: '#FF4500', // Accent orange
-  darkText: '#333333',
-  mutedText: '#888888',
-  background: '#FDFBF7', // Cream/beige background
+  bg: '#FFF8F2',
+  surface: '#FFFCF8',
+  surfaceStrong: '#FFF2E8',
+  primary: '#D9773A',
+  primaryDark: '#B95F28',
+  text: '#191512',
+  muted: '#7A6B60',
+  border: '#EEDBCB',
+  shadow: 'rgba(111, 74, 42, 0.12)',
+  chip: '#FFF1E4',
+  white: '#FFF9F4',
 };

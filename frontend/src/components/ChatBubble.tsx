@@ -1,77 +1,73 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { colors } from '../theme';
+import type { Message } from '../types';
 
-interface ChatBubbleProps {
-  message: string;
-  isUser: boolean;
-}
+export function ChatBubble({ message }: { message: Message }) {
+  const isUser = message.role === 'user';
 
-export const ChatBubble: React.FC<ChatBubbleProps> = ({ message, isUser }) => {
   return (
-    <View style={[styles.container, isUser ? styles.userContainer : styles.botContainer]}>
-      {!isUser && (
-        <View style={styles.botAvatar}>
-          <Text style={styles.botAvatarText}>L</Text>
+    <View style={[styles.row, isUser ? styles.rowUser : styles.rowAssistant]}>
+      {!isUser ? (
+        <View style={styles.botBadge}>
+          <Text style={styles.botBadgeText}>L</Text>
         </View>
-      )}
-      <View style={[styles.bubble, isUser ? styles.userBubble : styles.botBubble]}>
-        <Text style={[styles.text, isUser ? styles.userText : styles.botText]}>
-          {message}
-        </Text>
+      ) : null}
+      <View style={[styles.bubble, isUser ? styles.bubbleUser : styles.bubbleAssistant]}>
+        <Text style={[styles.text, isUser ? styles.textUser : styles.textAssistant]}>{message.text}</Text>
       </View>
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
-  container: {
+  row: {
+    marginBottom: 14,
     flexDirection: 'row',
-    marginVertical: 8,
-    width: '100%',
+    alignItems: 'flex-end',
   },
-  userContainer: {
-    justifyContent: 'flex-end',
-  },
-  botContainer: {
+  rowAssistant: {
     justifyContent: 'flex-start',
   },
+  rowUser: {
+    justifyContent: 'flex-end',
+  },
+  botBadge: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: colors.primaryDark,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 8,
+  },
+  botBadgeText: {
+    color: colors.white,
+    fontSize: 12,
+    fontWeight: '800',
+  },
   bubble: {
-    maxWidth: '75%',
-    padding: 16,
-    borderRadius: 20,
+    maxWidth: '82%',
+    borderRadius: 22,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
   },
-  userBubble: {
-    backgroundColor: colors.primary,
-    borderBottomRightRadius: 4,
+  bubbleAssistant: {
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
-  botBubble: {
-    backgroundColor: '#F0F0F0',
-    borderBottomLeftRadius: 4,
-    marginLeft: 8,
+  bubbleUser: {
+    backgroundColor: colors.primaryDark,
   },
   text: {
-    fontSize: 16,
-    lineHeight: 22,
-  },
-  userText: {
-    color: 'white',
-  },
-  botText: {
-    color: colors.darkText,
-  },
-  botAvatar: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: colors.secondary,
-    justifyContent: 'center',
-    alignItems: 'center',
-    alignSelf: 'flex-end',
-  },
-  botAvatarText: {
-    color: 'white',
-    fontWeight: 'bold',
     fontSize: 14,
+    lineHeight: 21,
+    fontWeight: '600',
+  },
+  textAssistant: {
+    color: colors.text,
+  },
+  textUser: {
+    color: colors.white,
   },
 });

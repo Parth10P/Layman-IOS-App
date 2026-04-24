@@ -1,94 +1,100 @@
-import React from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { colors } from '../theme';
+import type { Article } from '../types';
 
-interface ArticleCardProps {
-  title: string;
-  imageUrl: string | null;
+export function ArticleCard({
+  article,
+  saved,
+  onPress,
+  onToggleSaved,
+}: {
+  article: Article;
+  saved: boolean;
   onPress: () => void;
-  featured?: boolean;
+  onToggleSaved: () => void;
+}) {
+  return (
+    <Pressable style={styles.row} onPress={onPress}>
+      <View style={[styles.thumb, { backgroundColor: article.accent }]}>
+        <Text style={styles.thumbLabel}>{article.imageLabel}</Text>
+      </View>
+      <View style={styles.copy}>
+        <Text style={styles.category}>{article.category}</Text>
+        <Text style={styles.headline} numberOfLines={2}>
+          {article.headline}
+        </Text>
+        <Text style={styles.meta}>{article.source}</Text>
+      </View>
+      <Pressable style={[styles.savePill, saved && styles.savePillActive]} onPress={onToggleSaved}>
+        <Text style={[styles.savePillText, saved && styles.savePillTextActive]}>
+          {saved ? 'Saved' : 'Save'}
+        </Text>
+      </Pressable>
+    </Pressable>
+  );
 }
 
-export const ArticleCard: React.FC<ArticleCardProps> = ({ title, imageUrl, onPress, featured = false }) => {
-  if (featured) {
-    return (
-      <TouchableOpacity style={styles.featuredCard} onPress={onPress}>
-        <Image 
-          source={{ uri: imageUrl || 'https://via.placeholder.com/400x200' }} 
-          style={styles.featuredImage} 
-        />
-        <View style={styles.featuredOverlay}>
-          <Text style={styles.featuredTitle} numberOfLines={2}>{title}</Text>
-        </View>
-      </TouchableOpacity>
-    );
-  }
-
-  return (
-    <TouchableOpacity style={styles.listCard} onPress={onPress}>
-      <Image 
-        source={{ uri: imageUrl || 'https://via.placeholder.com/100' }} 
-        style={styles.listThumbnail} 
-      />
-      <View style={styles.listContent}>
-        <Text style={styles.listTitle} numberOfLines={3}>{title}</Text>
-      </View>
-    </TouchableOpacity>
-  );
-};
-
 const styles = StyleSheet.create({
-  featuredCard: {
-    width: 300,
-    height: 200,
-    borderRadius: 16,
-    overflow: 'hidden',
-    marginRight: 16,
-    backgroundColor: '#eaeaea',
-  },
-  featuredImage: {
-    width: '100%',
-    height: '100%',
-    position: 'absolute',
-  },
-  featuredOverlay: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    padding: 16,
-    backgroundColor: 'rgba(0,0,0,0.5)', // gradient approximation
-  },
-  featuredTitle: {
-    color: 'white',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  listCard: {
+  row: {
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 24,
+    padding: 14,
     flexDirection: 'row',
-    marginBottom: 16,
-    backgroundColor: 'white',
-    borderRadius: 12,
-    padding: 12,
-    shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 8,
-    elevation: 2,
+    alignItems: 'center',
+    marginBottom: 14,
   },
-  listThumbnail: {
-    width: 80,
-    height: 80,
-    borderRadius: 8,
-  },
-  listContent: {
-    flex: 1,
-    marginLeft: 12,
+  thumb: {
+    width: 76,
+    height: 76,
+    borderRadius: 20,
+    alignItems: 'center',
     justifyContent: 'center',
+    padding: 10,
   },
-  listTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: colors.darkText,
+  thumbLabel: {
+    color: colors.white,
+    fontSize: 12,
+    fontWeight: '800',
+    textAlign: 'center',
+  },
+  copy: {
+    flex: 1,
+    paddingHorizontal: 12,
+  },
+  category: {
+    color: colors.primaryDark,
+    fontSize: 12,
+    fontWeight: '700',
+    marginBottom: 4,
+  },
+  headline: {
+    color: colors.text,
+    fontSize: 17,
+    lineHeight: 21,
+    fontWeight: '800',
+  },
+  meta: {
+    color: colors.muted,
+    fontSize: 12,
+    marginTop: 8,
+  },
+  savePill: {
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+    borderRadius: 14,
+    backgroundColor: colors.chip,
+  },
+  savePillActive: {
+    backgroundColor: colors.primaryDark,
+  },
+  savePillText: {
+    color: colors.primaryDark,
+    fontSize: 12,
+    fontWeight: '800',
+  },
+  savePillTextActive: {
+    color: colors.white,
   },
 });

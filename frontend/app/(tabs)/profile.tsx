@@ -1,45 +1,141 @@
-import React from 'react';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
+import { BottomTabBar } from '../../src/components/BottomTabBar';
+import { Screen } from '../../src/components/Screen';
+import { useAppState } from '../../src/state/app-state';
 import { colors } from '../../src/theme';
 
-export default function ProfileScreen() {
+export default function ProfileTab() {
   const router = useRouter();
-
-  const handleSignOut = () => {
-    // Navigate back to auth screen
-    router.replace('/auth');
-  };
+  const { fullName, email, savedIds } = useAppState();
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Profile</Text>
-      </View>
-      <View style={styles.content}>
-        <View style={styles.avatar}>
-          <Text style={styles.avatarText}>JD</Text>
-        </View>
-        <Text style={styles.name}>John Doe</Text>
-        <Text style={styles.email}>john.doe@example.com</Text>
+    <Screen>
+      <View style={styles.root}>
+        <Text style={styles.brand}>Profile</Text>
+        <Text style={styles.greeting}>Your Layman account and reading setup.</Text>
 
-        <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
-          <Text style={styles.signOutText}>Sign Out</Text>
-        </TouchableOpacity>
+        <View style={styles.profileCard}>
+          <View style={styles.avatar}>
+            <Text style={styles.avatarText}>PK</Text>
+          </View>
+          <Text style={styles.name}>{fullName}</Text>
+          <Text style={styles.email}>{email}</Text>
+        </View>
+
+        <View style={styles.settingsCard}>
+          <View style={styles.settingRow}>
+            <Text style={styles.settingLabel}>Saved stories</Text>
+            <Text style={styles.settingValue}>{savedIds.length}</Text>
+          </View>
+          <View style={styles.settingRow}>
+            <Text style={styles.settingLabel}>Preferred mode</Text>
+            <Text style={styles.settingValue}>Simple explainers</Text>
+          </View>
+          <View style={[styles.settingRow, styles.lastRow]}>
+            <Text style={styles.settingLabel}>Reading style</Text>
+            <Text style={styles.settingValue}>Short cards</Text>
+          </View>
+        </View>
+
+        <Pressable style={styles.button} onPress={() => router.replace('/')}>
+          <Text style={styles.buttonText}>Sign out</Text>
+        </Pressable>
       </View>
-    </SafeAreaView>
+      <BottomTabBar activeTab="profile" />
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FAFAFA' },
-  header: { padding: 20 },
-  headerTitle: { fontSize: 28, fontWeight: 'bold', color: colors.darkText },
-  content: { alignItems: 'center', marginTop: 40, paddingHorizontal: 20 },
-  avatar: { width: 100, height: 100, borderRadius: 50, backgroundColor: colors.primary, justifyContent: 'center', alignItems: 'center', marginBottom: 20 },
-  avatarText: { fontSize: 36, fontWeight: 'bold', color: 'white' },
-  name: { fontSize: 24, fontWeight: 'bold', color: colors.darkText, marginBottom: 5 },
-  email: { fontSize: 16, color: colors.mutedText, marginBottom: 40 },
-  signOutButton: { width: '100%', padding: 16, backgroundColor: '#FFF0F0', borderRadius: 12, alignItems: 'center', borderWidth: 1, borderColor: '#FFCCCC' },
-  signOutText: { color: 'red', fontSize: 16, fontWeight: 'bold' }
+  root: {
+    flex: 1,
+    paddingHorizontal: 24,
+    paddingTop: 18,
+    paddingBottom: 120,
+  },
+  brand: {
+    color: colors.text,
+    fontSize: 30,
+    fontWeight: '800',
+    letterSpacing: -1.1,
+  },
+  greeting: {
+    color: colors.muted,
+    fontSize: 14,
+    marginTop: 4,
+  },
+  profileCard: {
+    backgroundColor: colors.surface,
+    borderRadius: 28,
+    borderWidth: 1,
+    borderColor: colors.border,
+    padding: 24,
+    alignItems: 'center',
+    marginTop: 24,
+  },
+  avatar: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: colors.primaryDark,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 18,
+  },
+  avatarText: {
+    color: colors.white,
+    fontSize: 24,
+    fontWeight: '800',
+  },
+  name: {
+    color: colors.text,
+    fontSize: 24,
+    fontWeight: '800',
+  },
+  email: {
+    color: colors.muted,
+    fontSize: 14,
+    marginTop: 6,
+  },
+  settingsCard: {
+    backgroundColor: colors.surface,
+    borderRadius: 28,
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingHorizontal: 18,
+    marginTop: 18,
+    marginBottom: 24,
+  },
+  settingRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 18,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  lastRow: {
+    borderBottomWidth: 0,
+  },
+  settingLabel: {
+    color: colors.text,
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  settingValue: {
+    color: colors.muted,
+    fontSize: 14,
+  },
+  button: {
+    backgroundColor: colors.primary,
+    borderRadius: 18,
+    paddingVertical: 16,
+    alignItems: 'center',
+  },
+  buttonText: {
+    color: colors.white,
+    fontSize: 16,
+    fontWeight: '800',
+  },
 });
