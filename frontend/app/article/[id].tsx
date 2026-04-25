@@ -1,5 +1,15 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Modal,
+  Pressable,
+  ScrollView,
+  Share,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { useEffect, useState } from 'react';
 import { Screen } from '../../src/components/Screen';
 import { SwipeableSummary } from '../../src/components/SwipeableSummary';
@@ -17,6 +27,7 @@ export default function ArticleScreen() {
   const [aiCards, setAiCards] = useState<string[]>(article?.cards || []);
   const [isLoadingSummary, setIsLoadingSummary] = useState(false);
   const [summaryError, setSummaryError] = useState('');
+  const [isSourceModalOpen, setIsSourceModalOpen] = useState(false);
 
   useEffect(() => {
     if (!article) return;
@@ -31,6 +42,23 @@ export default function ArticleScreen() {
 
     loadSummary();
   }, [article?.id]);
+
+  const handleShare = async () => {
+    if (!article) return;
+
+    const shareParts = [article.headline];
+    if (article.sourceUrl) {
+      shareParts.push(article.sourceUrl);
+    }
+
+    try {
+      await Share.share({
+        message: shareParts.join('\n\n'),
+      });
+    } catch (error) {
+      console.warn('Unable to share article', error);
+    }
+  };
 
   if (!article) {
     return (
@@ -55,18 +83,37 @@ export default function ArticleScreen() {
     <Screen>
       <ScrollView contentContainerStyle={styles.scroll}>
         <View style={styles.topBar}>
-          <Pressable style={styles.iconButton} onPress={() => router.replace(from === 'home' ? '/(tabs)' : `/(tabs)/${from}`)}>
-            <Text style={styles.iconButtonText}>{'<'}</Text>
+          <Pressable
+            style={styles.iconButton}
+            onPress={() => router.replace(from === 'home' ? '/(tabs)' : `/(tabs)/${from}`)}
+          >
+            <Ionicons name="chevron-back" size={18} color={colors.muted} />
           </Pressable>
           <View style={styles.actionRow}>
-            <Pressable style={styles.iconButton}>
-              <Text style={styles.iconButtonText}>L</Text>
+            <Pressable
+              style={styles.iconButton}
+              onPress={() => setIsSourceModalOpen(true)}
+              accessibilityLabel="Open original article details"
+            >
+              <Ionicons name="link-outline" size={18} color={colors.muted} />
             </Pressable>
-            <Pressable style={styles.iconButton} onPress={() => toggleSaved(article.id)}>
-              <Text style={styles.iconButtonText}>{savedIds.includes(article.id) ? 'B' : '+'}</Text>
+            <Pressable
+              style={styles.iconButton}
+              onPress={() => toggleSaved(article.id)}
+              accessibilityLabel={savedIds.includes(article.id) ? 'Remove saved article' : 'Save article'}
+            >
+              <Ionicons
+                name={savedIds.includes(article.id) ? 'bookmark' : 'bookmark-outline'}
+                size={18}
+                color={savedIds.includes(article.id) ? colors.primaryDark : colors.muted}
+              />
             </Pressable>
-            <Pressable style={styles.iconButton}>
-              <Text style={styles.iconButtonText}>S</Text>
+            <Pressable
+              style={styles.iconButton}
+              onPress={handleShare}
+              accessibilityLabel="Share article"
+            >
+              <Ionicons name="share-outline" size={18} color={colors.muted} />
             </Pressable>
           </View>
         </View>
@@ -107,6 +154,52 @@ export default function ArticleScreen() {
           <Text style={styles.bottomCtaText}>Ask Layman</Text>
         </Pressable>
       </View>
+
+      <Modal
+        visible={isSourceModalOpen}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setIsSourceModalOpen(false)}
+      >
+        <View style={styles.modalBackdrop}>
+          <View style={styles.modalCard}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Original article</Text>
+              <Pressable
+                style={styles.modalCloseButton}
+                onPress={() => setIsSourceModalOpen(false)}
+              >
+                <Ionicons name="close" size={18} color={colors.muted} />
+              </Pressable>
+            </View>
+
+            <Text style={styles.modalSource}>{article.source}</Text>
+            <Text style={styles.modalHeadline}>{article.title || article.headline}</Text>
+            {article.content ? (
+              <Text style={styles.modalSnippet} numberOfLines={6}>
+                {article.content}
+              </Text>
+            ) : (
+              <Text style={styles.modalSnippet} numberOfLines={4}>
+                {article.summary}
+              </Text>
+            )}
+
+            {article.sourceUrl ? (
+              <View style={styles.urlChip}>
+                <Ionicons name="link-outline" size={14} color={colors.primaryDark} />
+                <Text style={styles.urlText} numberOfLines={1}>
+                  {article.sourceUrl}
+                </Text>
+              </View>
+            ) : null}
+
+            <Pressable style={styles.modalPrimaryButton} onPress={() => setIsSourceModalOpen(false)}>
+              <Text style={styles.modalPrimaryText}>Done</Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
     </Screen>
   );
 }
@@ -153,11 +246,6 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  iconButtonText: {
-    color: colors.primaryDark,
-    fontSize: 14,
-    fontWeight: '800',
   },
   headline: {
     color: colors.text,
@@ -238,6 +326,90 @@ const styles = StyleSheet.create({
   bottomCtaText: {
     color: colors.white,
     fontSize: 17,
+    fontWeight: '800',
+  },
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(21, 17, 14, 0.32)',
+    justifyContent: 'center',
+    paddingHorizontal: 22,
+  },
+  modalCard: {
+    backgroundColor: colors.surface,
+    borderRadius: 26,
+    borderWidth: 1,
+    borderColor: colors.border,
+    padding: 22,
+    shadowColor: colors.shadow,
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 1,
+    shadowRadius: 24,
+    elevation: 8,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  modalTitle: {
+    color: colors.text,
+    fontSize: 22,
+    fontWeight: '800',
+    letterSpacing: -0.6,
+  },
+  modalCloseButton: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.surfaceStrong,
+  },
+  modalSource: {
+    color: colors.primaryDark,
+    fontSize: 13,
+    fontWeight: '700',
+    marginBottom: 8,
+  },
+  modalHeadline: {
+    color: colors.text,
+    fontSize: 20,
+    lineHeight: 26,
+    fontWeight: '800',
+    marginBottom: 12,
+  },
+  modalSnippet: {
+    color: colors.muted,
+    fontSize: 15,
+    lineHeight: 22,
+  },
+  urlChip: {
+    marginTop: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: colors.surfaceStrong,
+    borderRadius: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  urlText: {
+    flex: 1,
+    color: colors.primaryDark,
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  modalPrimaryButton: {
+    marginTop: 18,
+    backgroundColor: colors.primary,
+    borderRadius: 18,
+    paddingVertical: 15,
+    alignItems: 'center',
+  },
+  modalPrimaryText: {
+    color: colors.white,
+    fontSize: 16,
     fontWeight: '800',
   },
 });
