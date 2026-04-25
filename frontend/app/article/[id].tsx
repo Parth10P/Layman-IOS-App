@@ -3,6 +3,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import {
   ActivityIndicator,
   Alert,
+  Image,
   Linking,
   Pressable,
   ScrollView,
@@ -12,6 +13,7 @@ import {
   View,
 } from 'react-native';
 import { useEffect, useState } from 'react';
+import { AskLaymanSheet } from '../../src/components/AskLaymanSheet';
 import { Screen } from '../../src/components/Screen';
 import { SwipeableSummary } from '../../src/components/SwipeableSummary';
 import { transformArticleForLayman } from '../../src/lib/api';
@@ -28,6 +30,7 @@ export default function ArticleScreen() {
   const [aiCards, setAiCards] = useState<string[]>(article?.cards || []);
   const [isLoadingSummary, setIsLoadingSummary] = useState(false);
   const [summaryError, setSummaryError] = useState('');
+  const [isAskLaymanOpen, setIsAskLaymanOpen] = useState(false);
 
   useEffect(() => {
     if (!article) return;
@@ -138,9 +141,12 @@ export default function ArticleScreen() {
         </Text>
 
         <View style={[styles.heroImage, { backgroundColor: article.accent }]}>
-          <Text style={styles.heroLabel}>{article.imageLabel}</Text>
-          {article.publishedAt ? (
-            <Text style={styles.heroMeta}>{new Date(article.publishedAt).toDateString()}</Text>
+          {article.imageUrl ? (
+            <Image
+              source={{ uri: article.imageUrl }}
+              style={styles.heroPhoto}
+              resizeMode="cover"
+            />
           ) : null}
         </View>
 
@@ -162,13 +168,17 @@ export default function ArticleScreen() {
       <View style={styles.bottomCtaWrap}>
         <Pressable
           style={styles.bottomCta}
-          onPress={() =>
-            router.push({ pathname: '/chat/[articleId]', params: { articleId: article.id, from } })
-          }
+          onPress={() => setIsAskLaymanOpen(true)}
         >
           <Text style={styles.bottomCtaText}>Ask Layman</Text>
         </Pressable>
       </View>
+
+      <AskLaymanSheet
+        article={article}
+        visible={isAskLaymanOpen}
+        onClose={() => setIsAskLaymanOpen(false)}
+      />
     </Screen>
   );
 }
@@ -227,20 +237,13 @@ const styles = StyleSheet.create({
   heroImage: {
     height: 230,
     borderRadius: 28,
-    alignItems: 'center',
-    justifyContent: 'center',
     marginBottom: 22,
+    overflow: 'hidden',
   },
-  heroLabel: {
-    color: colors.white,
-    fontSize: 24,
-    fontWeight: '800',
-  },
-  heroMeta: {
-    color: 'rgba(255, 249, 244, 0.82)',
-    fontSize: 12,
-    fontWeight: '700',
-    marginTop: 8,
+  heroPhoto: {
+    ...StyleSheet.absoluteFillObject,
+    width: '100%',
+    height: '100%',
   },
   loadingBox: {
     backgroundColor: colors.surface,

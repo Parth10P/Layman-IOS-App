@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ArticleCard } from '../../src/components/ArticleCard';
 import { BottomTabBar } from '../../src/components/BottomTabBar';
@@ -17,6 +17,7 @@ export default function HomeTab() {
   const { feedArticles, setFeedArticles } = useAppState();
   const { savedArticles, toggleSave, isSaved, loading } = useSavedArticles();
   const [search, setSearch] = useState('');
+  const [searchOpen, setSearchOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
 
@@ -65,16 +66,29 @@ export default function HomeTab() {
     <Screen>
       <ScrollView contentContainerStyle={styles.scroll}>
         <View style={styles.headerRow}>
-          <View>
-            <Text style={styles.brand}>Layman</Text>
-            <Text style={styles.greeting}>Business, tech & startups made simple</Text>
-          </View>
-          <View style={styles.avatar}>
-            <Ionicons name="person" size={24} color={colors.white} />
-          </View>
+          <Text style={styles.brand}>Layman</Text>
+          <Pressable
+            style={[styles.searchButton, searchOpen && styles.searchButtonActive]}
+            onPress={() => setSearchOpen((current) => !current)}
+          >
+            <Ionicons
+              name={searchOpen ? 'close' : 'search-outline'}
+              size={20}
+              color={searchOpen ? colors.primaryDark : colors.muted}
+            />
+          </Pressable>
         </View>
 
-        <SearchBar value={search} onChangeText={setSearch} />
+        {searchOpen || search.trim() ? (
+          <View style={styles.searchWrap}>
+            <SearchBar
+              value={search}
+              onChangeText={setSearch}
+              placeholder="Search stories"
+              autoFocus={searchOpen}
+            />
+          </View>
+        ) : null}
 
         {isLoading ? (
           <View style={styles.noticeBox}>
@@ -100,7 +114,6 @@ export default function HomeTab() {
 
         {filteredArticles.length > 0 ? (
           <>
-            <Text style={styles.sectionTitle}>Featured</Text>
             <FeaturedCarousel
               articles={filteredArticles}
               onPressArticle={(articleId) =>
@@ -110,7 +123,9 @@ export default function HomeTab() {
 
             <View style={styles.sectionRow}>
               <Text style={styles.sectionTitle}>Today's Picks</Text>
-              <Text style={styles.sectionLink}>{filteredArticles.length} stories</Text>
+              <Pressable onPress={() => setSearch('')}>
+                <Text style={styles.sectionLink}>View All</Text>
+              </Pressable>
             </View>
 
             {filteredArticles.map((article) => (
@@ -142,26 +157,30 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 18,
   },
   brand: {
     color: colors.text,
-    fontSize: 30,
-    fontWeight: '800',
-    letterSpacing: -1.1,
+    fontSize: 35,
+    lineHeight: 32,
+    fontWeight: '700',
+    letterSpacing: -1,
   },
-  greeting: {
-    color: colors.muted,
-    fontSize: 14,
-    marginTop: 4,
-  },
-  avatar: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: colors.primaryDark,
+  searchButton: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: colors.surfaceStrong,
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  searchButtonActive: {
+    backgroundColor: colors.chip,
+  },
+  searchWrap: {
+    marginBottom: 22,
   },
   sectionTitle: {
     color: colors.text,
@@ -179,6 +198,7 @@ const styles = StyleSheet.create({
     color: colors.primaryDark,
     fontSize: 13,
     fontWeight: '700',
+    textDecorationLine: 'underline',
   },
   noticeBox: {
     backgroundColor: colors.surface,

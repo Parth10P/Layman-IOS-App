@@ -232,15 +232,19 @@ export async function askLayman(
     return "Please configure your Groq API key to use the chat feature.";
 
   try {
+    const articleContext = (article.content || article.summary).substring(0, 2000);
     const systemPrompt = `You are Layman, a helpful and casual AI assistant. 
 You are answering a user's question about the following article:
 Title: ${article.title}
-Content: ${(article.content || article.summary).substring(0, 2000)}
+Content: ${articleContext}
 
 RULES:
 1. Answer in 1-2 short sentences max.
 2. Use everyday, simple terms. No jargon.
-3. Be friendly and conversational.`;
+3. Be friendly and conversational.
+4. Only answer using the information actually present in the article content above.
+5. If the article does not contain enough detail, say you don't have enough information.
+6. Do NOT invent paywalls, paid plans, subscriptions, missing sections, or hidden article details unless the article content explicitly says that.`;
 
     const messages = [
       { role: "system", content: systemPrompt },
@@ -265,10 +269,30 @@ RULES:
     );
 
     const data = await response.json();
-    return (
-      data.choices[0].message.content ||
-      "I'm not sure how to answer that right now."
-    );
+    const answer =
+      data.choices?.[0]?.message?.content?.trim() ||
+      "I'm not sure how to answer that right now.";
+
+    const lowerAnswer = answer.toLowerCase();
+    const lowerContext = articleContext.toLowerCase();
+    const mentionsPaywall =
+      lowerAnswer.includes('paid plan') ||
+      lowerAnswer.includes('paid plans') ||
+      lowerAnswer.includes('subscriber') ||
+      lowerAnswer.includes('subscription') ||
+      lowerAnswer.includes('paywall');
+    const contextMentionsPaywall =
+      lowerContext.includes('paid plan') ||
+      lowerContext.includes('paid plans') ||
+      lowerContext.includes('subscriber') ||
+      lowerContext.includes('subscription') ||
+      lowerContext.includes('paywall');
+
+    if (mentionsPaywall && !contextMentionsPaywall) {
+      return "I don't have enough information in this article excerpt to answer that confidently.";
+    }
+
+    return answer;
   } catch (error) {
     console.error("Error asking Layman:", error);
     return "Oops! I hit a snag trying to answer that. Let's try again.";

@@ -1,14 +1,32 @@
-import { ScrollView, StyleSheet, Text, View, ActivityIndicator } from 'react-native';
+import { useMemo, useState } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ArticleCard } from '../../src/components/ArticleCard';
 import { BottomTabBar } from '../../src/components/BottomTabBar';
 import { Screen } from '../../src/components/Screen';
+import { SearchBar } from '../../src/components/SearchBar';
 import { useSavedArticles } from '../../src/hooks/useSavedArticles';
 import { colors } from '../../src/theme';
 
 export default function SavedTab() {
   const router = useRouter();
   const { savedArticles, toggleSave, loading } = useSavedArticles();
+  const [search, setSearch] = useState('');
+  const [searchOpen, setSearchOpen] = useState(false);
+
+  const filteredSavedArticles = useMemo(() => {
+    const trimmed = search.trim().toLowerCase();
+    if (!trimmed) return savedArticles;
+
+    return savedArticles.filter(
+      (article) =>
+        article.headline.toLowerCase().includes(trimmed) ||
+        article.title.toLowerCase().includes(trimmed) ||
+        article.category.toLowerCase().includes(trimmed) ||
+        article.source.toLowerCase().includes(trimmed),
+    );
+  }, [savedArticles, search]);
 
   if (loading) {
     return (
@@ -25,12 +43,34 @@ export default function SavedTab() {
   return (
     <Screen>
       <View style={styles.root}>
-        <Text style={styles.brand}>Saved</Text>
-        <Text style={styles.greeting}>Everything you bookmarked lives here.</Text>
+        <View style={styles.headerRow}>
+          <Text style={styles.brand}>Saved</Text>
+          <Pressable
+            style={[styles.searchButton, searchOpen && styles.searchButtonActive]}
+            onPress={() => setSearchOpen((current) => !current)}
+          >
+            <Ionicons
+              name={searchOpen ? 'close' : 'search-outline'}
+              size={20}
+              color={searchOpen ? colors.primaryDark : colors.muted}
+            />
+          </Pressable>
+        </View>
+
+        {searchOpen || search.trim() ? (
+          <View style={styles.searchWrap}>
+            <SearchBar
+              value={search}
+              onChangeText={setSearch}
+              placeholder="Search saved stories"
+              autoFocus={searchOpen}
+            />
+          </View>
+        ) : null}
 
         <ScrollView contentContainerStyle={styles.list}>
-          {savedArticles.length ? (
-            savedArticles.map((article) => (
+          {filteredSavedArticles.length ? (
+            filteredSavedArticles.map((article) => (
               <ArticleCard
                 key={article.id}
                 article={article}
@@ -43,8 +83,14 @@ export default function SavedTab() {
             ))
           ) : (
             <View style={styles.emptyState}>
-              <Text style={styles.emptyTitle}>No saved articles yet</Text>
-              <Text style={styles.emptyText}>Tap Save on any article to keep it here.</Text>
+              <Text style={styles.emptyTitle}>
+                {savedArticles.length ? 'No matching saved articles' : 'No saved articles yet'}
+              </Text>
+              <Text style={styles.emptyText}>
+                {savedArticles.length
+                  ? 'Try a different search term to find one of your saved stories.'
+                  : 'Tap Save on any article to keep it here.'}
+              </Text>
             </View>
           )}
         </ScrollView>
@@ -71,17 +117,34 @@ const styles = StyleSheet.create({
     paddingTop: 18,
     paddingBottom: 120,
   },
+  headerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 18,
+  },
   brand: {
     color: colors.text,
-    fontSize: 30,
+    fontSize: 28,
+    lineHeight: 32,
     fontWeight: '800',
-    letterSpacing: -1.1,
+    letterSpacing: -1,
   },
-  greeting: {
-    color: colors.muted,
-    fontSize: 14,
-    marginTop: 4,
-    marginBottom: 24,
+  searchButton: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: colors.surfaceStrong,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  searchButtonActive: {
+    backgroundColor: colors.chip,
+  },
+  searchWrap: {
+    marginBottom: 18,
   },
   list: {
     paddingBottom: 12,
