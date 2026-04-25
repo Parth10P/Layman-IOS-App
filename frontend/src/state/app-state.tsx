@@ -69,9 +69,9 @@ const AppStateContext = createContext<AppStateValue | null>(null);
 
 export function AppStateProvider({ children }: { children: ReactNode }) {
   const [feedArticles, setFeedArticles] = useState<Article[]>([]);
-  const [fullName, setFullName] = useState('Parth Kumar');
-  const [email, setEmail] = useState('parth@example.com');
-  const [password, setPassword] = useState('12345678');
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState('');
   const [savedIds, setSavedIds] = useState<string[]>([]);
   const [chats, setChats] = useState<Record<string, Message[]>>({});
 
