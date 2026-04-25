@@ -1,14 +1,52 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View, ActivityIndicator } from 'react-native';
 import { Screen } from '../src/components/Screen';
 import { useAppState } from '../src/state/app-state';
+import { useAuth } from '../src/hooks/useAuth';
 import { colors } from '../src/theme';
 
 export default function AuthScreen() {
   const router = useRouter();
   const [mode, setMode] = useState<'login' | 'signup'>('login');
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { fullName, setFullName, email, setEmail, password, setPassword } = useAppState();
+  const { signIn, signUp } = useAuth();
+
+  const handleSubmit = async () => {
+    setAuthError(null);
+    setIsSubmitting(true);
+
+    try {
+      if (mode === 'login') {
+        const { error } = await signIn(email, password);
+        if (error) {
+          setAuthError(error.message);
+          Alert.alert('Login failed', error.message);
+        } else {
+          router.replace('/(tabs)');
+        }
+      } else {
+        const { error } = await signUp(email, password, fullName);
+        if (error) {
+          setAuthError(error.message);
+          Alert.alert('Sign up failed', error.message);
+        } else {
+          Alert.alert(
+            'Check your email',
+            'We sent you a confirmation link. Please verify your email before logging in.',
+            [{ text: 'OK', onPress: () => setMode('login') }]
+          );
+        }
+      }
+    } catch (err) {
+      setAuthError('An unexpected error occurred');
+      Alert.alert('Error', 'An unexpected error occurred. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <Screen>
@@ -35,6 +73,7 @@ export default function AuthScreen() {
                 placeholder="Full name"
                 placeholderTextColor={colors.muted}
                 style={styles.input}
+                editable={!isSubmitting}
               />
             ) : null}
 
@@ -45,6 +84,7 @@ export default function AuthScreen() {
               placeholderTextColor={colors.muted}
               style={styles.input}
               autoCapitalize="none"
+              editable={!isSubmitting}
             />
             <TextInput
               value={password}
@@ -53,13 +93,20 @@ export default function AuthScreen() {
               placeholderTextColor={colors.muted}
               style={styles.input}
               secureTextEntry
+              editable={!isSubmitting}
             />
 
-            <Pressable style={styles.primaryButton} onPress={() => router.replace('/(tabs)')}>
-              <Text style={styles.primaryButtonText}>{mode === 'login' ? 'Enter app' : 'Create account'}</Text>
+            {authError ? <Text style={styles.errorText}>{authError}</Text> : null}
+
+            <Pressable style={[styles.primaryButton, isSubmitting && styles.primaryButtonDisabled]} onPress={handleSubmit} disabled={isSubmitting}>
+              {isSubmitting ? (
+                <ActivityIndicator color={colors.white} />
+              ) : (
+                <Text style={styles.primaryButtonText}>{mode === 'login' ? 'Enter app' : 'Create account'}</Text>
+              )}
             </Pressable>
 
-            <Pressable style={styles.secondaryButton} onPress={() => router.back()}>
+            <Pressable style={styles.secondaryButton} onPress={() => router.back()} disabled={isSubmitting}>
               <Text style={styles.secondaryButtonText}>Back to welcome</Text>
             </Pressable>
           </View>
@@ -163,5 +210,14 @@ const styles = StyleSheet.create({
     color: colors.muted,
     fontSize: 14,
     fontWeight: '700',
+  },
+  errorText: {
+    color: '#DC3545',
+    fontSize: 14,
+    textAlign: 'center',
+    marginBottom: 12,
+  },
+  primaryButtonDisabled: {
+    opacity: 0.6,
   },
 });

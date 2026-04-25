@@ -1,14 +1,34 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { BottomTabBar } from '../../src/components/BottomTabBar';
 import { Screen } from '../../src/components/Screen';
 import { useAppState } from '../../src/state/app-state';
+import { useAuth } from '../../src/hooks/useAuth';
 import { colors } from '../../src/theme';
 
 export default function ProfileTab() {
   const router = useRouter();
   const { fullName, email, savedIds } = useAppState();
+  const { signOut } = useAuth();
+
+  const handleSignOut = async () => {
+    Alert.alert(
+      'Sign out',
+      'Are you sure you want to sign out?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Sign out',
+          style: 'destructive',
+          onPress: async () => {
+            await signOut();
+            router.replace('/auth');
+          },
+        },
+      ]
+    );
+  };
 
   return (
     <Screen>
@@ -39,7 +59,7 @@ export default function ProfileTab() {
           </View>
         </View>
 
-        <Pressable style={styles.button} onPress={() => router.replace('/')}>
+        <Pressable style={styles.button} onPress={handleSignOut}>
           <Text style={styles.buttonText}>Sign out</Text>
         </Pressable>
       </View>
