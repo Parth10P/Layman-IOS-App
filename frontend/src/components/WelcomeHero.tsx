@@ -131,7 +131,6 @@ export function WelcomeHero({ onStart }: WelcomeHeroProps) {
 
           <View style={styles.headerRow}>
             <Text style={styles.brand}>Layman</Text>
-            <View style={styles.brandLine} />
           </View>
 
           <View style={[styles.heroBlock, { paddingTop: headingTopSpacer }]}>
@@ -193,18 +192,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   brand: {
-    color: '#2A241F',
+    color: '#171412ff',
     fontSize: 50,
-    lineHeight: 90,
+    lineHeight: 100,
     fontWeight: '700',
-    letterSpacing: -1.15,
-  },
-  brandLine: {
-    flex: 1,
-    height: 1,
-    marginLeft: 14,
-    marginTop: 5,
-    backgroundColor: '#DDC9B9',
+    letterSpacing: -1.0,
+    marginLeft: 100,
+    fontFamily:"Inter",
   },
   heroBlock: {
     flex: 1,
