@@ -1,221 +1,305 @@
-import { useRef, useState } from 'react';
-import {
-  Animated,
-  LayoutChangeEvent,
-  PanResponder,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
-import { colors } from '../theme';
+import { Ionicons } from '@expo/vector-icons';
+import React from 'react';
+import { StatusBar, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import Animated, {
+  Extrapolation,
+  interpolate,
+  runOnJS,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+} from 'react-native-reanimated';
 
-const KNOB_SIZE = 52;
-const TRACK_PADDING = 6;
+const HORIZONTAL_PADDING = 28;
+const TRACK_HEIGHT = 68;
+const THUMB_SIZE = 56;
+const TRACK_INSET = 6;
 
-export function WelcomeHero({ onStart }: { onStart: () => void }) {
-  const translateX = useRef(new Animated.Value(0)).current;
-  const dragStart = useRef(0);
-  const [trackWidth, setTrackWidth] = useState(0);
-  const [isCompleting, setIsCompleting] = useState(false);
+interface WelcomeHeroProps {
+  onStart: () => void;
+}
 
-  const maxDrag = Math.max(trackWidth - KNOB_SIZE - TRACK_PADDING * 2, 0);
+export function WelcomeHero({ onStart }: WelcomeHeroProps) {
+  const { width, height } = useWindowDimensions();
+  const trackWidth = Math.min(width - HORIZONTAL_PADDING * 2, 420);
+  const maxDrag = trackWidth - THUMB_SIZE - TRACK_INSET * 2;
 
-  const finishSwipe = () => {
-    if (isCompleting) return;
-    setIsCompleting(true);
-    Animated.timing(translateX, {
-      toValue: maxDrag,
-      duration: 140,
-      useNativeDriver: true,
-    }).start(() => {
-      onStart();
-      translateX.setValue(0);
-      setIsCompleting(false);
+  const dragX = useSharedValue(0);
+  const isCompleting = useSharedValue(false);
+
+  const panGesture = Gesture.Pan()
+    .activeOffsetX([8, 999])
+    .failOffsetY([-18, 18])
+    .maxPointers(1)
+    .onUpdate((event) => {
+      if (isCompleting.value) {
+        return;
+      }
+
+      const nextX = Math.max(0, Math.min(maxDrag, event.translationX));
+      dragX.value = nextX;
+    })
+    .onEnd((event) => {
+      if (isCompleting.value) {
+        return;
+      }
+
+      const shouldComplete =
+        event.translationX >= maxDrag * 0.8 ||
+        (event.translationX >= maxDrag * 0.58 && event.velocityX > 900);
+
+      if (shouldComplete) {
+        isCompleting.value = true;
+        dragX.value = withSpring(
+          maxDrag,
+          {
+            damping: 20,
+            stiffness: 220,
+            mass: 0.9,
+            overshootClamping: true,
+          },
+          (finished) => {
+            if (finished) {
+              runOnJS(onStart)();
+            }
+          }
+        );
+        return;
+      }
+
+      dragX.value = withSpring(0, {
+        damping: 18,
+        stiffness: 240,
+        mass: 0.85,
+      });
     });
-  };
 
-  const resetSwipe = () => {
-    Animated.spring(translateX, {
-      toValue: 0,
-      useNativeDriver: true,
-      bounciness: 6,
-    }).start();
-  };
+  const thumbStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: dragX.value }],
+  }));
 
-  const panResponder = useRef(
-    PanResponder.create({
-      onStartShouldSetPanResponder: () => !isCompleting,
-      onMoveShouldSetPanResponder: (_, gestureState) =>
-        !isCompleting && Math.abs(gestureState.dx) > 4,
-      onPanResponderGrant: () => {
-        dragStart.current = maxDrag > 0 ? ((translateX as unknown) as { __getValue?: () => number }).__getValue?.() ?? 0 : 0;
-      },
-      onPanResponderMove: (_, gestureState) => {
-        if (isCompleting) return;
-        const nextValue = Math.max(0, Math.min(maxDrag, dragStart.current + gestureState.dx));
-        translateX.setValue(nextValue);
-      },
-      onPanResponderRelease: (_, gestureState) => {
-        const movedFarEnough = gestureState.dx > maxDrag * 0.55;
-        const releasedNearEnd = dragStart.current + gestureState.dx > maxDrag * 0.72;
-        if (movedFarEnough || releasedNearEnd) {
-          finishSwipe();
-          return;
-        }
-        resetSwipe();
-      },
-      onPanResponderTerminate: resetSwipe,
-    }),
-  ).current;
+  const fillStyle = useAnimatedStyle(() => ({
+    width: THUMB_SIZE + TRACK_INSET + dragX.value,
+    opacity: interpolate(dragX.value, [0, maxDrag], [0.72, 1]),
+  }));
 
-  const handleTrackLayout = (event: LayoutChangeEvent) => {
-    setTrackWidth(event.nativeEvent.layout.width);
-  };
+  const labelStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(dragX.value, [0, maxDrag * 0.7, maxDrag], [1, 0.92, 0.25]),
+    transform: [
+      {
+        translateX: interpolate(dragX.value, [0, maxDrag], [0, -8], Extrapolation.CLAMP),
+      },
+    ],
+  }));
+
+  const glowTopSize = Math.min(width * 0.78, 338);
+  const glowBottomSize = Math.min(width * 0.56, 242);
+  const headingTopSpacer = Math.max(44, height * 0.1);
 
   return (
-    <View style={styles.screenRoot}>
-      <View style={styles.glowOne} />
-      <View style={styles.glowTwo} />
+    <GestureHandlerRootView style={styles.root}>
+      <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
+        <StatusBar barStyle="dark-content" backgroundColor="#FCF5EE" />
 
-      <View style={styles.topWordmarkRow}>
-        <Text style={styles.wordmark}>Layman</Text>
-        <View style={styles.wordmarkLine} />
-      </View>
+        <View style={styles.canvas}>
+          <View
+            style={[
+              styles.topGlow,
+              {
+                width: glowTopSize,
+                height: glowTopSize,
+                borderRadius: glowTopSize / 2,
+                top: -glowTopSize * 0.22,
+                right: -glowTopSize * 0.18,
+              },
+            ]}
+          />
+          <View
+            style={[
+              styles.bottomGlow,
+              {
+                width: glowBottomSize,
+                height: glowBottomSize,
+                borderRadius: glowBottomSize / 2,
+                bottom: 184,
+                left: -glowBottomSize * 0.18,
+              },
+            ]}
+          />
 
-      <View style={styles.heroCopyWrap}>
-        <Text style={styles.heroText}>
-          Business,{'\n'}
-          tech & startups
-        </Text>
-        <Text style={styles.heroAccent}>made simple</Text>
-      </View>
+          <View style={styles.headerRow}>
+            <Text style={styles.brand}>Layman</Text>
+            <View style={styles.brandLine} />
+          </View>
 
-      <View style={styles.footerArea}>
-        <View style={styles.swipeTrack} onLayout={handleTrackLayout}>
-          <Pressable style={styles.tapTarget} onPress={finishSwipe}>
-            <Text style={styles.swipeLabel}>Swipe to get started</Text>
-          </Pressable>
-          <Animated.View
-            style={[styles.swipeKnob, { transform: [{ translateX }] }]}
-            {...panResponder.panHandlers}
-          >
-            <Text style={styles.swipeArrow}>{'>>'}</Text>
-          </Animated.View>
+          <View style={[styles.heroBlock, { paddingTop: headingTopSpacer }]}>
+            <Text style={styles.heroText}>Business,{"\n"}tech & startups</Text>
+            <Text style={styles.heroAccent}>made simple</Text>
+          </View>
+
+          <View style={styles.footer}>
+            <GestureDetector gesture={panGesture}>
+              <View style={[styles.ctaTrack, { width: trackWidth }]}> 
+                <Animated.View style={[styles.ctaFill, fillStyle]} />
+                <Animated.View style={[styles.ctaLabelWrap, labelStyle]}>
+                  <Text style={styles.ctaLabel}>Swipe to get started</Text>
+                </Animated.View>
+                <Animated.View style={[styles.thumb, thumbStyle]}>
+                  <View style={styles.thumbIconRow}>
+                    <Ionicons name="chevron-forward" size={16} color="#D97A3A" />
+                    <Ionicons name="chevron-forward" size={16} color="#D97A3A" style={styles.thumbSecondIcon} />
+                  </View>
+                </Animated.View>
+              </View>
+            </GestureDetector>
+          </View>
         </View>
-        <Text style={styles.helperText}>Slide right to continue into the app</Text>
-      </View>
-    </View>
+      </SafeAreaView>
+    </GestureHandlerRootView>
   );
 }
 
 const styles = StyleSheet.create({
-  screenRoot: {
+  root: {
     flex: 1,
-    backgroundColor: '#FBF5EF',
-    paddingHorizontal: 24,
-    paddingTop: 72,
-    paddingBottom: 42,
-    justifyContent: 'space-between',
+    backgroundColor: '#FCF5EE',
+  },
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#FCF5EE',
+  },
+  canvas: {
+    flex: 1,
+    backgroundColor: '#FCF5EE',
+    paddingHorizontal: HORIZONTAL_PADDING,
+    paddingTop: 18,
+    paddingBottom: 32,
     overflow: 'hidden',
   },
-  glowOne: {
+  topGlow: {
     position: 'absolute',
-    top: 92,
-    left: -10,
-    width: 250,
-    height: 250,
-    borderRadius: 125,
-    backgroundColor: '#F6D8BF',
-    opacity: 0.8,
+    backgroundColor: '#F7E0BE',
+    opacity: 0.82,
   },
-  glowTwo: {
+  bottomGlow: {
     position: 'absolute',
-    bottom: 150,
-    right: -22,
-    width: 220,
-    height: 220,
-    borderRadius: 110,
-    backgroundColor: '#F7E4C9',
-    opacity: 0.88,
+    backgroundColor: '#F5DFC2',
+    opacity: 0.55,
   },
-  topWordmarkRow: {
+  headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 2,
   },
-  wordmark: {
+  brand: {
     color: '#2A241F',
-    fontSize: 31,
+    fontSize: 50,
+    lineHeight: 90,
     fontWeight: '700',
-    letterSpacing: -1.2,
+    letterSpacing: -1.15,
   },
-  wordmarkLine: {
+  brandLine: {
     flex: 1,
     height: 1,
-    backgroundColor: '#D9C2B4',
     marginLeft: 14,
-    marginTop: 4,
+    marginTop: 5,
+    backgroundColor: '#DDC9B9',
   },
-  heroCopyWrap: {
+  heroBlock: {
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
-    marginTop: -22,
+    paddingBottom: 78,
   },
   heroText: {
+    color: '#211B17',
     textAlign: 'center',
-    color: '#201A16',
-    fontSize: 47,
-    lineHeight: 50,
-    fontWeight: '800',
-    letterSpacing: -1.6,
+    fontSize: 48,
+    lineHeight: 46,
+    fontWeight: '700',
+    letterSpacing: -1.80,
   },
   heroAccent: {
-    color: colors.primary,
-    fontSize: 45,
-    lineHeight: 48,
+    color: '#D97A3A',
+    textAlign: 'center',
+    fontSize: 41,
+    lineHeight: 44,
     fontWeight: '800',
-    letterSpacing: -1.6,
+    letterSpacing: -1.5,
+    marginTop: -1
+    ,
   },
-  footerArea: {
-    gap: 14,
+  footer: {
+    alignItems: 'center',
+    paddingBottom: 6,
   },
-  swipeTrack: {
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: colors.primary,
+  ctaTrack: {
+    height: TRACK_HEIGHT,
+    borderRadius: TRACK_HEIGHT / 2,
+    backgroundColor: '#DF7B36',
     justifyContent: 'center',
-    padding: TRACK_PADDING,
+    overflow: 'hidden',
+    shadowColor: 'rgba(133, 78, 37, 0.14)',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 1,
+    shadowRadius: 20,
+    elevation: 6,
   },
-  tapTarget: {
-    ...StyleSheet.absoluteFillObject,
+  ctaFill: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    borderRadius: TRACK_HEIGHT / 2,
+    backgroundColor: '#D4712E',
+  },
+  ctaLabelWrap: {
+    position: 'absolute',
+    left: THUMB_SIZE + 18,
+    right: 28,
+    justifyContent: 'center',
+    height: '100%',
+  },
+  ctaLabel: {
+    color: '#FFFDF9',
+    fontSize: 15,
+    lineHeight: 18,
+    fontWeight: '800',
+    letterSpacing: -0.3,
+  },
+  thumb: {
+    position: 'absolute',
+    left: TRACK_INSET,
+    top: TRACK_INSET,
+    width: THUMB_SIZE,
+    height: THUMB_SIZE,
+    borderRadius: THUMB_SIZE / 2,
+    backgroundColor: '#FFF7F0',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingLeft: KNOB_SIZE + 8,
-    paddingRight: 28,
+    shadowColor: 'rgba(170, 100, 42, 0.12)',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 1,
+    shadowRadius: 10,
+    elevation: 3,
   },
-  swipeKnob: {
-    width: KNOB_SIZE,
-    height: KNOB_SIZE,
-    borderRadius: KNOB_SIZE / 2,
-    backgroundColor: '#FFF4EB',
+  thumbIconRow: {
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  swipeArrow: {
-    color: colors.primary,
-    fontSize: 16,
-    fontWeight: '800',
     marginLeft: 2,
   },
-  swipeLabel: {
-    color: '#FFF7F0',
-    fontSize: 16,
-    fontWeight: '700',
-    textAlign: 'center',
+  thumbSecondIcon: {
+    marginLeft: -7,
   },
   helperText: {
-    color: colors.muted,
-    fontSize: 14,
+    marginTop: 18,
+    color: '#8A7A70',
     textAlign: 'center',
+    fontSize: 14,
+    lineHeight: 18,
+    fontWeight: '500',
+    letterSpacing: -0.15,
   },
 });

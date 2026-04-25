@@ -106,10 +106,6 @@ export default function AuthScreen() {
                 <Text style={styles.primaryButtonText}>{mode === 'login' ? 'Enter app' : 'Create account'}</Text>
               )}
             </Pressable>
-
-            <Pressable style={styles.secondaryButton} onPress={() => router.back()} disabled={isSubmitting}>
-              <Text style={styles.secondaryButtonText}>Back to welcome</Text>
-            </Pressable>
           </View>
         </KeyboardAvoidingView>
       </ScrollView>
