@@ -22,34 +22,32 @@ Why this was chosen:
 
 - Active app state uses React context in `frontend/src/state/app-state.tsx`
 - State currently includes:
-  - mock auth form values
-  - in-memory saved article IDs
+  - feed articles (from NewsData API)
+  - auth form values (transient)
+  - saved article IDs (persisted to Supabase via `useSavedArticles` hook)
   - in-memory chat history
 
 Why this was chosen:
 
 - Low complexity for a fast UI-first prototype
-- No external store required for current mock interactions
-- Keeps initial implementation simple while routing/UI is being stabilized
+- Hybrid approach: local state for transient data, Supabase for persistence
+- Keeps routing/UI shell while adding real data layer incrementally
 
 Tradeoff:
 
-- This does not persist across app relaunches
-- It will become limiting once real auth and network data are added
+- Feed articles are still fetched fresh on each load (not cached)
+- Chat history is not yet persisted
 
 ### Data Source
 
-- Active screens use static article data from `frontend/src/data/articles.ts`
+- Home screen fetches live articles from NewsData.io API via `frontend/src/lib/api.ts`
+- Article data includes headline, summary, category, and image URLs
+- AI-powered summaries and chat responses via Groq API
 
 Why this was chosen:
 
-- Enables fast screen building before live APIs are ready
-- Supports design iteration independent of backend readiness
-
-Tradeoff:
-
-- The app does not yet reflect real news content
-- Summary/chat flows do not exercise production data
+- Real news content provides authentic user experience
+- API integration follows assignment requirements
 
 ### UI Composition
 
@@ -67,17 +65,14 @@ Why this was chosen:
 
 ### Supabase
 
-Evidence:
+Current status (2026-04-25):
 
-- `.env.example` includes Supabase variables
-- assignment brief explicitly calls for Supabase auth and persistence
-- older README references Supabase setup
-
-Current reality:
-
-- no active Supabase client used by the routed app
-- no migrations or config are committed
-- no session persistence exists
+- Supabase client configured in `frontend/src/lib/supabase.ts`
+- Auth integration active via `useAuth` hook
+- Session persistence via Expo SecureStore
+- `profiles` table for user data (auto-created on signup)
+- `saved_articles` table for persisted bookmarks
+- RLS policies enable user-scoped data access
 
 ### NewsData.io + Groq
 
