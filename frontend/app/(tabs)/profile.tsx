@@ -1,16 +1,18 @@
-import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Alert, Pressable, StyleSheet, Text, View, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { BottomTabBar } from '../../src/components/BottomTabBar';
 import { Screen } from '../../src/components/Screen';
-import { useAppState } from '../../src/state/app-state';
 import { useAuth } from '../../src/hooks/useAuth';
+import { useProfile } from '../../src/hooks/useProfile';
+import { useSavedArticles } from '../../src/hooks/useSavedArticles';
 import { colors } from '../../src/theme';
 
 export default function ProfileTab() {
   const router = useRouter();
-  const { fullName, email, savedIds } = useAppState();
-  const { signOut } = useAuth();
+  const { signOut, user } = useAuth();
+  const { profile, profileLoading } = useProfile();
+  const { savedArticles, loading: articlesLoading } = useSavedArticles();
 
   const handleSignOut = async () => {
     Alert.alert(
@@ -30,6 +32,18 @@ export default function ProfileTab() {
     );
   };
 
+  if (profileLoading || articlesLoading) {
+    return (
+      <Screen>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={styles.loadingText}>Loading profile...</Text>
+        </View>
+        <BottomTabBar activeTab="profile" />
+      </Screen>
+    );
+  }
+
   return (
     <Screen>
       <View style={styles.root}>
@@ -40,14 +54,14 @@ export default function ProfileTab() {
           <View style={styles.avatar}>
             <Ionicons name="person" size={40} color={colors.white} />
           </View>
-          <Text style={styles.name}>{fullName}</Text>
-          <Text style={styles.email}>{email}</Text>
+          <Text style={styles.name}>{profile?.full_name || user?.email || 'User'}</Text>
+          <Text style={styles.email}>{profile?.email || user?.email}</Text>
         </View>
 
         <View style={styles.settingsCard}>
           <View style={styles.settingRow}>
             <Text style={styles.settingLabel}>Saved stories</Text>
-            <Text style={styles.settingValue}>{savedIds.length}</Text>
+            <Text style={styles.settingValue}>{savedArticles.length}</Text>
           </View>
           <View style={styles.settingRow}>
             <Text style={styles.settingLabel}>Preferred mode</Text>
@@ -69,6 +83,16 @@ export default function ProfileTab() {
 }
 
 const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    color: colors.muted,
+    marginTop: 16,
+    fontSize: 14,
+  },
   root: {
     flex: 1,
     paddingHorizontal: 24,

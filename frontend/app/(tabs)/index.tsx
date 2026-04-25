@@ -9,11 +9,13 @@ import { Screen } from '../../src/components/Screen';
 import { SearchBar } from '../../src/components/SearchBar';
 import { fetchNews } from '../../src/lib/api';
 import { useAppState } from '../../src/state/app-state';
+import { useSavedArticles } from '../../src/hooks/useSavedArticles';
 import { colors } from '../../src/theme';
 
 export default function HomeTab() {
   const router = useRouter();
-  const { feedArticles, savedIds, setFeedArticles, toggleSaved } = useAppState();
+  const { feedArticles, setFeedArticles } = useAppState();
+  const { savedArticles, toggleSave, isSaved, loading } = useSavedArticles();
   const [search, setSearch] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -115,8 +117,8 @@ export default function HomeTab() {
               <ArticleCard
                 key={article.id}
                 article={article}
-                saved={savedIds.includes(article.id)}
-                onToggleSaved={() => toggleSaved(article.id)}
+                saved={isSaved(article.id)}
+                onToggleSaved={() => toggleSave(article)}
                 onPress={() =>
                   router.push({ pathname: '/article/[id]', params: { id: article.id, from: 'home' } })
                 }

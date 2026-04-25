@@ -1,15 +1,26 @@
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ArticleCard } from '../../src/components/ArticleCard';
 import { BottomTabBar } from '../../src/components/BottomTabBar';
 import { Screen } from '../../src/components/Screen';
-import { useAppState } from '../../src/state/app-state';
+import { useSavedArticles } from '../../src/hooks/useSavedArticles';
 import { colors } from '../../src/theme';
 
 export default function SavedTab() {
   const router = useRouter();
-  const { feedArticles, savedIds, toggleSaved } = useAppState();
-  const savedArticles = feedArticles.filter((article) => savedIds.includes(article.id));
+  const { savedArticles, toggleSave, loading } = useSavedArticles();
+
+  if (loading) {
+    return (
+      <Screen>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={styles.loadingText}>Loading saved articles...</Text>
+        </View>
+        <BottomTabBar activeTab="saved" />
+      </Screen>
+    );
+  }
 
   return (
     <Screen>
@@ -24,7 +35,7 @@ export default function SavedTab() {
                 key={article.id}
                 article={article}
                 saved
-                onToggleSaved={() => toggleSaved(article.id)}
+                onToggleSaved={() => toggleSave(article)}
                 onPress={() =>
                   router.push({ pathname: '/article/[id]', params: { id: article.id, from: 'saved' } })
                 }
@@ -44,6 +55,16 @@ export default function SavedTab() {
 }
 
 const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    color: colors.muted,
+    marginTop: 16,
+    fontSize: 14,
+  },
   root: {
     flex: 1,
     paddingHorizontal: 24,

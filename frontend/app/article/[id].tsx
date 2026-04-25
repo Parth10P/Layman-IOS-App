@@ -5,13 +5,15 @@ import { Screen } from '../../src/components/Screen';
 import { SwipeableSummary } from '../../src/components/SwipeableSummary';
 import { transformArticleForLayman } from '../../src/lib/api';
 import { useAppState } from '../../src/state/app-state';
+import { useSavedArticles } from '../../src/hooks/useSavedArticles';
 import { colors } from '../../src/theme';
 import type { TabKey } from '../../src/types';
 
 export default function ArticleScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{ id?: string; from?: string }>();
-  const { feedArticles, savedIds, toggleSaved } = useAppState();
+  const { feedArticles } = useAppState();
+  const { toggleSave, isSaved } = useSavedArticles();
   const article = feedArticles.find((entry) => entry.id === params.id) ?? null;
   const from = (params.from as TabKey | undefined) ?? 'home';
   const [aiCards, setAiCards] = useState<string[]>(article?.cards || []);
@@ -62,8 +64,8 @@ export default function ArticleScreen() {
             <Pressable style={styles.iconButton}>
               <Text style={styles.iconButtonText}>L</Text>
             </Pressable>
-            <Pressable style={styles.iconButton} onPress={() => toggleSaved(article.id)}>
-              <Text style={styles.iconButtonText}>{savedIds.includes(article.id) ? 'B' : '+'}</Text>
+            <Pressable style={styles.iconButton} onPress={() => toggleSave(article)}>
+              <Text style={styles.iconButtonText}>{isSaved(article.id) ? 'B' : '+'}</Text>
             </Pressable>
             <Pressable style={styles.iconButton}>
               <Text style={styles.iconButtonText}>S</Text>

@@ -11,7 +11,7 @@ import type { TabKey, Message } from '../../src/types';
 export default function ChatScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{ articleId?: string; from?: string }>();
-  const { feedArticles, toggleSaved } = useAppState();
+  const { feedArticles } = useAppState();
   const article = feedArticles.find((entry) => entry.id === params.articleId) ?? null;
   const from = (params.from as TabKey | undefined) ?? 'home';
   const [input, setInput] = useState('');

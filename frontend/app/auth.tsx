@@ -33,6 +33,7 @@ export default function AuthScreen() {
           setAuthError(error.message);
           Alert.alert('Sign up failed', error.message);
         } else {
+          // Profile is auto-created by database trigger
           Alert.alert(
             'Check your email',
             'We sent you a confirmation link. Please verify your email before logging in.',
