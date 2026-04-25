@@ -2,7 +2,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import {
   ActivityIndicator,
-  Modal,
+  Alert,
+  Linking,
   Pressable,
   ScrollView,
   Share,
@@ -27,7 +28,6 @@ export default function ArticleScreen() {
   const [aiCards, setAiCards] = useState<string[]>(article?.cards || []);
   const [isLoadingSummary, setIsLoadingSummary] = useState(false);
   const [summaryError, setSummaryError] = useState('');
-  const [isSourceModalOpen, setIsSourceModalOpen] = useState(false);
 
   useEffect(() => {
     if (!article) return;
@@ -42,6 +42,21 @@ export default function ArticleScreen() {
 
     loadSummary();
   }, [article?.id]);
+
+  const handleOpenSource = async () => {
+    if (!article?.sourceUrl) {
+      Alert.alert('Link unavailable', 'This article does not have a source URL yet.');
+      return;
+    }
+
+    const canOpen = await Linking.canOpenURL(article.sourceUrl);
+    if (!canOpen) {
+      Alert.alert('Unable to open link', 'The original article link could not be opened.');
+      return;
+    }
+
+    await Linking.openURL(article.sourceUrl);
+  };
 
   const handleShare = async () => {
     if (!article) return;
@@ -92,8 +107,8 @@ export default function ArticleScreen() {
           <View style={styles.actionRow}>
             <Pressable
               style={styles.iconButton}
-              onPress={() => setIsSourceModalOpen(true)}
-              accessibilityLabel="Open original article details"
+              onPress={handleOpenSource}
+              accessibilityLabel="Open original article"
             >
               <Ionicons name="link-outline" size={18} color={colors.muted} />
             </Pressable>
@@ -154,52 +169,6 @@ export default function ArticleScreen() {
           <Text style={styles.bottomCtaText}>Ask Layman</Text>
         </Pressable>
       </View>
-
-      <Modal
-        visible={isSourceModalOpen}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setIsSourceModalOpen(false)}
-      >
-        <View style={styles.modalBackdrop}>
-          <View style={styles.modalCard}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Original article</Text>
-              <Pressable
-                style={styles.modalCloseButton}
-                onPress={() => setIsSourceModalOpen(false)}
-              >
-                <Ionicons name="close" size={18} color={colors.muted} />
-              </Pressable>
-            </View>
-
-            <Text style={styles.modalSource}>{article.source}</Text>
-            <Text style={styles.modalHeadline}>{article.title || article.headline}</Text>
-            {article.content ? (
-              <Text style={styles.modalSnippet} numberOfLines={6}>
-                {article.content}
-              </Text>
-            ) : (
-              <Text style={styles.modalSnippet} numberOfLines={4}>
-                {article.summary}
-              </Text>
-            )}
-
-            {article.sourceUrl ? (
-              <View style={styles.urlChip}>
-                <Ionicons name="link-outline" size={14} color={colors.primaryDark} />
-                <Text style={styles.urlText} numberOfLines={1}>
-                  {article.sourceUrl}
-                </Text>
-              </View>
-            ) : null}
-
-            <Pressable style={styles.modalPrimaryButton} onPress={() => setIsSourceModalOpen(false)}>
-              <Text style={styles.modalPrimaryText}>Done</Text>
-            </Pressable>
-          </View>
-        </View>
-      </Modal>
     </Screen>
   );
 }
@@ -326,90 +295,6 @@ const styles = StyleSheet.create({
   bottomCtaText: {
     color: colors.white,
     fontSize: 17,
-    fontWeight: '800',
-  },
-  modalBackdrop: {
-    flex: 1,
-    backgroundColor: 'rgba(21, 17, 14, 0.32)',
-    justifyContent: 'center',
-    paddingHorizontal: 22,
-  },
-  modalCard: {
-    backgroundColor: colors.surface,
-    borderRadius: 26,
-    borderWidth: 1,
-    borderColor: colors.border,
-    padding: 22,
-    shadowColor: colors.shadow,
-    shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 1,
-    shadowRadius: 24,
-    elevation: 8,
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 12,
-  },
-  modalTitle: {
-    color: colors.text,
-    fontSize: 22,
-    fontWeight: '800',
-    letterSpacing: -0.6,
-  },
-  modalCloseButton: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.surfaceStrong,
-  },
-  modalSource: {
-    color: colors.primaryDark,
-    fontSize: 13,
-    fontWeight: '700',
-    marginBottom: 8,
-  },
-  modalHeadline: {
-    color: colors.text,
-    fontSize: 20,
-    lineHeight: 26,
-    fontWeight: '800',
-    marginBottom: 12,
-  },
-  modalSnippet: {
-    color: colors.muted,
-    fontSize: 15,
-    lineHeight: 22,
-  },
-  urlChip: {
-    marginTop: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    backgroundColor: colors.surfaceStrong,
-    borderRadius: 16,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-  },
-  urlText: {
-    flex: 1,
-    color: colors.primaryDark,
-    fontSize: 13,
-    fontWeight: '600',
-  },
-  modalPrimaryButton: {
-    marginTop: 18,
-    backgroundColor: colors.primary,
-    borderRadius: 18,
-    paddingVertical: 15,
-    alignItems: 'center',
-  },
-  modalPrimaryText: {
-    color: colors.white,
-    fontSize: 16,
     fontWeight: '800',
   },
 });
