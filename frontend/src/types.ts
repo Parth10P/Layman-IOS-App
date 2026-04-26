@@ -6,6 +6,7 @@ export type Article = {
   title: string;
   subtitle: string;
   headline: string;
+  displayHeadline?: string;
   summary: string;
   imageLabel: string;
   accent: string;

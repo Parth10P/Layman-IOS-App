@@ -29,7 +29,7 @@ export function ArticleCard({
       <View style={styles.copy}>
         <Text style={styles.category}>{article.category}</Text>
         <Text style={styles.headline} numberOfLines={2}>
-          {article.headline}
+          {article.displayHeadline || article.headline}
         </Text>
         <Text style={styles.meta}>{article.source}</Text>
       </View>

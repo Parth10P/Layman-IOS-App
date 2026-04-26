@@ -8,6 +8,7 @@ import { FeaturedCarousel } from '../../src/components/FeaturedCarousel';
 import { Screen } from '../../src/components/Screen';
 import { SearchBar } from '../../src/components/SearchBar';
 import { fetchNews } from '../../src/lib/api';
+import { rewriteFeedHeadlines } from '../../src/lib/headlines';
 import { useAppState } from '../../src/state/app-state';
 import { useSavedArticles } from '../../src/hooks/useSavedArticles';
 import { colors } from '../../src/theme';
@@ -32,7 +33,9 @@ export default function HomeTab() {
       if (!active) return;
 
       if (freshArticles.length > 0) {
-        setFeedArticles(freshArticles);
+        const rewrittenArticles = await rewriteFeedHeadlines(freshArticles);
+        if (!active) return;
+        setFeedArticles(rewrittenArticles);
       } else if (process.env.EXPO_PUBLIC_NEWSDATA_API_KEY) {
         setFeedArticles([]);
         setLoadError('NewsData API key is invalid, expired, or has exhausted its quota. Please check your API key at newsdata.io');
@@ -57,10 +60,11 @@ export default function HomeTab() {
     return feedArticles.filter(
       (article) =>
         article.headline.toLowerCase().includes(trimmed) ||
+        (article.displayHeadline || '').toLowerCase().includes(trimmed) ||
         article.title.toLowerCase().includes(trimmed) ||
         article.category.toLowerCase().includes(trimmed),
     );
-  }, [search]);
+  }, [feedArticles, search]);
 
   return (
     <Screen>
