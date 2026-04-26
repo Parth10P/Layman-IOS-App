@@ -48,7 +48,6 @@ export default function ProfileTab() {
     <Screen>
       <View style={styles.root}>
         <Text style={styles.brand}>Profile</Text>
-        <Text style={styles.greeting}>Your Layman account and reading setup.</Text>
 
         <View style={styles.profileCard}>
           <View style={styles.avatar}>
