@@ -1,6 +1,7 @@
+import { useCallback } from 'react';
 import { Alert, Pressable, StyleSheet, Text, View, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { BottomTabBar } from '../../src/components/BottomTabBar';
 import { Screen } from '../../src/components/Screen';
 import { useAuth } from '../../src/hooks/useAuth';
@@ -12,7 +13,13 @@ export default function ProfileTab() {
   const router = useRouter();
   const { signOut, user } = useAuth();
   const { profile, profileLoading } = useProfile();
-  const { savedArticles, loading: articlesLoading } = useSavedArticles();
+  const { savedArticles, loading: articlesLoading, refreshSavedArticles } = useSavedArticles();
+
+  useFocusEffect(
+    useCallback(() => {
+      refreshSavedArticles();
+    }, [refreshSavedArticles])
+  );
 
   const handleSignOut = async () => {
     Alert.alert(

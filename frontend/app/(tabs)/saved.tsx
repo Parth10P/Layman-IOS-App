@@ -1,7 +1,7 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { ArticleCard } from '../../src/components/ArticleCard';
 import { BottomTabBar } from '../../src/components/BottomTabBar';
 import { Screen } from '../../src/components/Screen';
@@ -11,9 +11,15 @@ import { colors } from '../../src/theme';
 
 export default function SavedTab() {
   const router = useRouter();
-  const { savedArticles, toggleSave, loading } = useSavedArticles();
+  const { savedArticles, toggleSave, loading, refreshSavedArticles } = useSavedArticles();
   const [search, setSearch] = useState('');
   const [searchOpen, setSearchOpen] = useState(false);
+
+  useFocusEffect(
+    useCallback(() => {
+      refreshSavedArticles();
+    }, [refreshSavedArticles])
+  );
 
   const filteredSavedArticles = useMemo(() => {
     const trimmed = search.trim().toLowerCase();
