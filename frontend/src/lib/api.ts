@@ -81,6 +81,45 @@ const buildSuggestions = (headline: string) => [
   `Explain "${headline.slice(0, 18)}..." simply.`,
 ];
 
+const safeJsonParse = (value: unknown) => {
+  if (typeof value !== 'string') return null;
+
+  try {
+    return JSON.parse(value);
+  } catch {
+    const match = value.match(/\{[\s\S]*\}/);
+    if (!match) return null;
+
+    try {
+      return JSON.parse(match[0]);
+    } catch {
+      return null;
+    }
+  }
+};
+
+const extractStringArray = (value: unknown, expectedLength?: number) => {
+  if (!Array.isArray(value)) return null;
+
+  const normalized = value
+    .map((item) => (typeof item === 'string' ? item.trim() : ''))
+    .filter(Boolean);
+
+  if (expectedLength && normalized.length < expectedLength) {
+    return null;
+  }
+
+  return expectedLength ? normalized.slice(0, expectedLength) : normalized;
+};
+
+const isGroqRateLimitPayload = (value: string) => {
+  const lower = value.toLowerCase();
+  return lower.includes('rate limit') || lower.includes('rate_limit_exceeded') || lower.includes('tokens per day');
+};
+
+const shouldQuietlyFallbackGroq = (status: number, payload: string) =>
+  status === 429 || isGroqRateLimitPayload(payload);
+
 const buildArticleContext = (article: Article) => {
   const parts = [
     `Display headline: ${article.displayHeadline || article.headline}`,
@@ -208,16 +247,28 @@ Output JSON format only.
       },
     );
 
-    const data = await response.json();
-    if (data.choices && data.choices.length > 0) {
-      const parsed = JSON.parse(data.choices[0].message.content);
-      if (parsed.cards && Array.isArray(parsed.cards) && parsed.cards.length === 3) {
-        return parsed.cards.map((card: string, index: number) =>
-          normalizeSummaryCard(card, fallbackCards[index] || fallbackCards[0]),
-        );
+    if (!response.ok) {
+      const errorText = await response.text();
+      if (shouldQuietlyFallbackGroq(response.status, errorText)) {
+        console.warn('Groq summary quota reached. Falling back to local Layman cards.');
+        return fallbackCards;
       }
+      throw new Error(`Groq request failed (${response.status}): ${errorText}`);
     }
-    throw new Error("Invalid response from Groq");
+
+    const data = await response.json();
+    const messageContent = data?.choices?.[0]?.message?.content;
+    const parsed = safeJsonParse(messageContent);
+    const cards = extractStringArray(parsed?.cards, 3);
+
+    if (cards) {
+      return cards.map((card: string, index: number) =>
+        normalizeSummaryCard(card, fallbackCards[index] || fallbackCards[0]),
+      );
+    }
+
+    console.warn('Groq returned an unexpected summary payload:', messageContent);
+    return fallbackCards;
   } catch (error) {
     console.error("Error transforming article:", error);
     return buildLaymanCardFallbacks(article);
@@ -235,6 +286,11 @@ export async function generateChatSuggestions(
     ];
 
   try {
+    const fallbackQuestions = [
+      "What does this mean?",
+      "Why is this important?",
+      "Explain it simpler.",
+    ];
     const prompt = `Generate exactly 3 short, conversational questions a layman would ask about this article.
 
 RULES:
@@ -263,10 +319,20 @@ ${buildArticleContext(article)}`;
       },
     );
 
+    if (!response.ok) {
+      const errorText = await response.text();
+      if (shouldQuietlyFallbackGroq(response.status, errorText)) {
+        console.warn('Groq suggestions quota reached. Falling back to default questions.');
+        return fallbackQuestions;
+      }
+      throw new Error(`Groq request failed (${response.status}): ${errorText}`);
+    }
+
     const data = await response.json();
-    const parsed = JSON.parse(data.choices[0].message.content);
+    const parsed = safeJsonParse(data?.choices?.[0]?.message?.content) || {};
+    const questions = extractStringArray(parsed.questions, 3);
     return (
-      parsed.questions || [
+      questions || [
         "What does this mean?",
         "Why is this important?",
         "Explain it simpler.",
@@ -325,6 +391,14 @@ RULES:
         }),
       },
     );
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      if (shouldQuietlyFallbackGroq(response.status, errorText)) {
+        return "I’m temporarily out of AI quota right now, but you can still read the Layman summary cards above.";
+      }
+      throw new Error(`Groq request failed (${response.status}): ${errorText}`);
+    }
 
     const data = await response.json();
     const answer =

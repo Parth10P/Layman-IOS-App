@@ -16,6 +16,7 @@ import { useEffect, useState } from 'react';
 import { AskLaymanSheet } from '../../src/components/AskLaymanSheet';
 import { Screen } from '../../src/components/Screen';
 import { SwipeableSummary } from '../../src/components/SwipeableSummary';
+import { useSavedArticles } from '../../src/hooks/useSavedArticles';
 import { transformArticleForLayman } from '../../src/lib/api';
 import { useAppState } from '../../src/state/app-state';
 import { colors } from '../../src/theme';
@@ -24,8 +25,12 @@ import type { TabKey } from '../../src/types';
 export default function ArticleScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{ id?: string; from?: string }>();
-  const { feedArticles, savedIds, toggleSaved } = useAppState();
-  const article = feedArticles.find((entry) => entry.id === params.id) ?? null;
+  const { feedArticles } = useAppState();
+  const { savedArticles, loading: isLoadingSavedArticles, toggleSave, isSaved } = useSavedArticles();
+  const article =
+    feedArticles.find((entry) => entry.id === params.id) ||
+    savedArticles.find((entry) => entry.id === params.id) ||
+    null;
   const from = (params.from as TabKey | undefined) ?? 'home';
   const [aiCards, setAiCards] = useState<string[]>([]);
   const [isLoadingSummary, setIsLoadingSummary] = useState(Boolean(article));
@@ -82,6 +87,31 @@ export default function ArticleScreen() {
     }
   };
 
+  const handleToggleSaved = async () => {
+    if (!article) return;
+
+    const articleToSave = {
+      ...article,
+      cards: aiCards.length ? aiCards : article.cards,
+    };
+
+    const { error } = await toggleSave(articleToSave);
+    if (error) {
+      Alert.alert('Unable to save article', error.message || 'Please try again.');
+    }
+  };
+
+  if (!article && isLoadingSavedArticles) {
+    return (
+      <Screen>
+        <View style={styles.missingState}>
+          <ActivityIndicator color={colors.primaryDark} />
+          <Text style={styles.loadingText}>Loading article details...</Text>
+        </View>
+      </Screen>
+    );
+  }
+
   if (!article) {
     return (
       <Screen>
@@ -121,13 +151,13 @@ export default function ArticleScreen() {
             </Pressable>
             <Pressable
               style={styles.iconButton}
-              onPress={() => toggleSaved(article.id)}
-              accessibilityLabel={savedIds.includes(article.id) ? 'Remove saved article' : 'Save article'}
+              onPress={handleToggleSaved}
+              accessibilityLabel={isSaved(article.id) ? 'Remove saved article' : 'Save article'}
             >
               <Ionicons
-                name={savedIds.includes(article.id) ? 'bookmark' : 'bookmark-outline'}
+                name={isSaved(article.id) ? 'bookmark' : 'bookmark-outline'}
                 size={18}
-                color={savedIds.includes(article.id) ? colors.primaryDark : colors.muted}
+                color={isSaved(article.id) ? colors.primaryDark : colors.muted}
               />
             </Pressable>
             <Pressable

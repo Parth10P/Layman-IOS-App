@@ -4,62 +4,62 @@
 
 Read these files in this order:
 
-1. `CURRENT_TASK.md`
-2. `PROJECT_CONTEXT.md`
-3. `ARCHITECTURE.md`
-4. `BUGS_AND_FIXES.md`
-5. `CLAUDE.md`
+1. `context/CURRENT_TASK.md`
+2. `context/PROJECT_CONTEXT.md`
+3. `context/ARCHITECTURE.md`
+4. `context/BUGS_AND_FIXES.md`
+5. `context/CLAUDE.md`
 6. `README.md`
 
 Then inspect these code files first:
 
-1. `frontend/app/_layout.tsx`
-2. `frontend/app/index.tsx`
-3. `frontend/app/auth.tsx`
-4. `frontend/app/(tabs)/index.tsx`
-5. `frontend/app/article/[id].tsx`
-6. `frontend/app/chat/[articleId].tsx`
-7. `frontend/src/state/app-state.tsx`
-8. `frontend/src/lib/api.ts`
+1. `frontend/app/(tabs)/index.tsx`
+2. `frontend/app/(tabs)/saved.tsx`
+3. `frontend/app/article/[id].tsx`
+4. `frontend/src/hooks/useSavedArticles.ts`
+5. `frontend/src/lib/api.ts`
+6. `frontend/src/lib/headlines.ts`
+7. `frontend/src/components/AskLaymanSheet.tsx`
+8. `frontend/src/state/app-state.tsx`
 
 ## Current Reality In One Minute
 
 - Main project path: `/Users/patel_parthk/Desktop/Layman-IOS-App`
-- The app is an Expo Router React Native frontend prototype
-- The backend folder is not implemented
-- The UI shell exists for the full assignment flow
-- Real auth, persistence, and live article/AI integration are still missing
+- The active app is in `frontend/`
+- The live app uses:
+  - Supabase for auth and saved articles
+  - NewsData for feed content
+  - Groq for headline rewrites, layman cards, suggestions, and chat
+- Groq quota exhaustion is now handled gracefully with fallbacks
+- The biggest remaining code-health issue is `frontend/src/store/useStore.ts`
 
 ## Where To Resume
 
-Resume from the main project folder, not the old worktree.
+Always resume from the main project folder:
 
-Primary folder:
+- `/Users/patel_parthk/Desktop/Layman-IOS-App`
 
-- `/Users/patel_parthk/Desktop/Layman-IOS-App/frontend`
-
-Ignore the historical worktree unless explicitly asked to revisit it.
+Do not switch back to the old Codex worktree unless explicitly asked.
 
 ## Recommended First Action In The Next Session
 
-Confirm which product path the user wants:
+Confirm whether the user wants:
 
-1. finish the real data/auth implementation, or
-2. continue pixel-level UI refinement first
+1. more UI fidelity work, or
+2. deeper reliability/data-quality work
 
-Both are valid, but mixing them without priority causes drift.
+Both are active needs right now.
 
 ## Safe Commands To Re-Validate The Current Frontend
 
 Run from `frontend/`:
 
 ```bash
-npm install
 npx tsc --noEmit
 npx expo start -c
 ```
 
-Optional bundle check:
+Optional:
 
 ```bash
 npx expo export --platform web
@@ -69,14 +69,13 @@ npx expo export --platform web
 
 Do not assume:
 
-- Supabase is already wired
-- saved articles are persisted
-- chat uses real Groq/OpenAI calls in production flow
-- backend code exists
-- deployment or DevOps setup exists
+- Groq output will always be available
+- all NewsData articles include enough text for good chat answers
+- legacy TypeScript failures are part of the current live path
+- there is any real backend service outside Supabase + client-side API calls
 
 ## Key Technical Debt To Watch
 
-1. dead/legacy files beside the active routed app
-2. prototype data/state still powering real screens
-3. assignment requirements exceeding current implementation depth
+1. `frontend/src/store/useStore.ts` is legacy and still breaks TypeScript
+2. saved article payload shape must stay compatible with article detail and chat
+3. AI fallback behavior should stay user-friendly when Groq quota is exhausted

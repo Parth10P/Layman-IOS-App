@@ -2,84 +2,70 @@
 
 ## Active Focus
 
-Establish a durable AI project context system and stabilize the codebase for continued development from the main project folder.
+Stabilize the live NewsData + Groq + Supabase implementation while continuing pixel-level UI refinement against the Layman assignment mockups.
 
-## What Was Just Done
+## What Was Just Completed
 
-### Session: Image and Icon Updates (2026-04-25)
+### Saved article detail fix
 
-1. **Featured Carousel Images** - Fixed `FeaturedCarousel.tsx` to display article images:
-   - Added `Image` component rendering `item.imageUrl` as background
-   - Increased card height (220 → 260) for better content visibility
-   - Added dark overlay for text readability
+- Saved articles can now be opened from the Saved tab without incorrectly landing on `Article not available`
+- `useSavedArticles.ts` now normalizes stored payloads before save and after read
+- article detail lookup now supports both live feed articles and saved Supabase records
+- loading state now waits for saved-article fetch completion before declaring the article missing
 
-2. **Article Card Thumbnails** - Updated `ArticleCard.tsx` to show images:
-   - Added `Image` component in thumbnail box
-   - Falls back to text label when no image available
+### Groq response hardening
 
-3. **Vector Icons Throughout App** - Installed `@expo/vector-icons` and updated:
-   - `BottomTabBar.tsx`: home, bookmark, person icons
-   - `profile.tsx`: person icon (40px) in avatar
-   - `index.tsx`: person icon (24px) in header
+- `transformArticleForLayman()` now safely parses imperfect Groq JSON responses
+- unexpected Groq summary payloads fall back to local layman cards instead of throwing
+- chat suggestion parsing is also more tolerant
 
-4. **Documentation** - Updated `context/BUGS_AND_FIXES.md` with all fixes
+### Groq quota fallback
 
----
+- `429` and quota-limit responses now degrade gracefully
+- summary cards use local fallbacks
+- suggestions use default fallbacks
+- Ask Layman chat shows a clean quota message instead of crashing or logging a hard error path into the UI
 
-### Previous Session
+### Feed and article UX already in place
 
-- Merged the refactored Expo Router app from a worktree into the main project folder
-- Corrected route file names to Expo Router dynamic-route conventions:
-  - `app/article/[id].tsx`
-  - `app/chat/[articleId].tsx`
-- Reworked the welcome screen so it is a real full-screen UX, not a nested phone mockup
-- Made the welcome CTA swipeable
-- Removed the `SwipeableSummary` dependency on Reanimated to avoid route-load crashes
-- Added root-level continuity docs requested in the current session
+- conversational rewritten headlines for Home
+- bottom image gradient for Featured carousel readability
+- article hero images render correctly
+- Ask Layman runs as a blurred modal sheet instead of routing away
+- saved screen includes search
 
-## Immediate Next Engineering Work
+## Immediate Next Work
 
-1. Decide whether to keep the current mock-data prototype path or resume the original Supabase/API integration path.
-2. If continuing product work, the highest-value next milestone is:
-   - wire real NewsData fetching into the Home screen
-   - wire real AI summary generation into Article Detail
-   - wire real Ask Layman calls into Chat
-3. After that:
-   - implement Supabase auth
-   - persist saved articles
-   - remove dead/duplicate architecture files
+1. Verify that all saved articles persist with enough fields for article detail, chat, and summary generation.
+2. Improve Ask Layman answer quality when NewsData provides only thin content.
+3. Decide whether to add article payload enrichment before save:
+   - preserve generated layman cards
+   - preserve rewritten display headline
+   - preserve richer text context for chat
+4. Clean up or remove `frontend/src/store/useStore.ts` so TypeScript is no longer red on unrelated legacy code.
 
 ## Current Blockers
 
-1. No working Supabase integration in the live app flow
-2. No persisted storage for session or saved data
-3. API integration exists only in an unused file
-4. Backend folder is effectively empty
-5. No automated tests
-
-## Decision Needed Soon
-
-Choose one architecture direction:
-
-### Option A: Finish the current lightweight prototype architecture
-
-- Keep React context state
-- Integrate API calls directly into current routed screens
-- Add Supabase only where needed
-
-### Option B: Migrate to a fuller data layer
-
-- Reintroduce/store a coherent state architecture
-- Rewire API and persistence intentionally
-- Remove the current mock-only flow after replacement
-
-Do not continue with both paths in parallel.
+1. Groq daily quota is limited and may temporarily disable premium AI output.
+2. Some NewsData articles have weak or incomplete content, which limits chat quality.
+3. TypeScript still fails because of the inactive legacy file `frontend/src/store/useStore.ts`.
 
 ## Current Validation State
 
-Recent checks completed during this session:
+Validated recently:
 
-- `npx tsc --noEmit`
-- `npx expo export --platform web`
+- saved article normalization path updated
+- article detail lookup updated for saved records
+- Groq summary/chat fallback logic updated
 
-These confirm the frontend bundles, but they do not prove real auth/API functionality.
+`npx tsc --noEmit` still fails only because of `frontend/src/store/useStore.ts`, not because of the current live flow.
+
+## Recommended Next Session Start
+
+Open these files first:
+
+1. `frontend/src/hooks/useSavedArticles.ts`
+2. `frontend/app/article/[id].tsx`
+3. `frontend/src/lib/api.ts`
+4. `frontend/src/lib/headlines.ts`
+5. `frontend/src/components/AskLaymanSheet.tsx`

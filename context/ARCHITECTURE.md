@@ -2,152 +2,189 @@
 
 ## Executive Summary
 
-The implemented architecture is currently a frontend-first Expo Router application with local in-memory state and mock article data. The repository still contains signs of a planned richer architecture involving Supabase, NewsData.io, and Groq, but those integrations are not yet wired into the active app flow.
+The active architecture is a client-driven Expo Router app with third-party service integrations:
+
+- Supabase for auth and saved-article persistence
+- NewsData.io for live article feed data
+- Groq for text transformation and article chat
+
+There is no custom backend service, no Docker layer, and no deployment pipeline in this repository.
 
 ## What Is Actually Implemented
 
 ### Navigation
 
-- File-based routing with Expo Router
-- Root stack in `frontend/app/_layout.tsx`
-- Hidden native tab bar with a custom bottom tab component
+- File-based Expo Router under `frontend/app/**`
+- Hidden native tab UI with custom bottom tab bar
 
-Why this was chosen:
+Why:
 
-- Matches React Native/Expo idioms
-- Keeps route ownership explicit in the filesystem
-- Makes the 7-screen assignment structure easy to reason about
+- keeps 7-screen ownership explicit
+- aligns well with Expo assignment development
 
 ### State Management
 
-- Active app state uses React context in `frontend/src/state/app-state.tsx`
-- State currently includes:
-  - feed articles (from NewsData API)
-  - auth form values (transient)
-  - saved article IDs (persisted to Supabase via `useSavedArticles` hook)
-  - in-memory chat history
+- active UI/feed state in `frontend/src/state/app-state.tsx`
+- auth in `frontend/src/hooks/useAuth.ts`
+- saved articles in `frontend/src/hooks/useSavedArticles.ts`
 
-Why this was chosen:
+Why:
 
-- Low complexity for a fast UI-first prototype
-- Hybrid approach: local state for transient data, Supabase for persistence
-- Keeps routing/UI shell while adding real data layer incrementally
+- lightweight enough for a mobile assignment app
+- lets persistent concerns sit close to their integrations
 
 Tradeoff:
 
-- Feed articles are still fetched fresh on each load (not cached)
-- Chat history is not yet persisted
+- state logic is spread across context + hooks instead of one consolidated data layer
 
-### Data Source
+### Auth and Persistence
 
-- Home screen fetches live articles from NewsData.io API via `frontend/src/lib/api.ts`
-- Article data includes headline, summary, category, and image URLs
-- AI-powered summaries and chat responses via Groq API
+- Supabase client in `frontend/src/lib/supabase.ts`
+- auth/session in `useAuth`
+- saved articles persisted in `saved_articles`
+- each saved row stores:
+  - `article_id`
+  - `article_data`
 
-Why this was chosen:
+Why:
 
-- Real news content provides authentic user experience
-- API integration follows assignment requirements
+- fastest way to get user-scoped persistence without building a server
 
-### UI Composition
+Important detail:
 
-- Route screens are relatively thin
-- Shared visual elements live in `frontend/src/components`
-- Color tokens live in `frontend/src/theme.ts`
+- saved article payloads must stay normalized enough for article detail, summaries, and chat
+- `useSavedArticles.ts` now explicitly normalizes this data on read/write
 
-Why this was chosen:
+### Feed Data
 
-- Reduces duplication
-- Supports consistent assignment-themed styling
-- Makes later UI adjustments easier
+- `fetchNews()` in `frontend/src/lib/api.ts` pulls live NewsData stories
+- feed items are normalized into the shared `Article` type
 
-## What The Repository Suggests Was Planned
+Why:
 
-### Supabase
+- matches the assignment requirement for live business/tech content
 
-Current status (2026-04-25):
+Tradeoff:
 
-- Supabase client configured in `frontend/src/lib/supabase.ts`
-- Auth integration active via `useAuth` hook
-- Session persistence via Expo SecureStore
-- `profiles` table for user data (auto-created on signup)
-- `saved_articles` table for persisted bookmarks
-- RLS policies enable user-scoped data access
+- NewsData can return uneven article richness
 
-### NewsData.io + Groq
+### Headline Rewrite Layer
 
-Evidence:
+- `frontend/src/lib/headlines.ts`
+- raw API titles are rewritten by Groq into short conversational display headlines
+- UI uses `displayHeadline` for feed cards
 
-- `frontend/src/lib/api.ts` includes fetch/transform/chat helpers
-- `.env.example` includes corresponding API keys
+Why:
 
-Current reality:
+- raw headlines are often too long or too formal for the assignment mockups
 
-- this file is not connected to the current routed screens
-- the app currently uses mock article data and local heuristic chat responses
+Tradeoff:
 
-### Zustand
+- depends on LLM quota and output quality
 
-Evidence:
+### Article Summary Layer
+
+- `transformArticleForLayman()` in `frontend/src/lib/api.ts`
+- generates 3 layman cards per article
+- strict formatting prompt plus fallback generation
+
+Why:
+
+- assignment specifically expects short swipeable summary cards
+
+Tradeoff:
+
+- heavy dependence on source article quality and Groq quota
+
+### Chat Layer
+
+- Ask Layman modal sheet in `frontend/src/components/AskLaymanSheet.tsx`
+- `generateChatSuggestions()` creates article-aware starter questions
+- `askLayman()` answers using built article context:
+  - rewritten headline
+  - original title
+  - category
+  - source
+  - summary
+  - content
+  - layman cards
+  - published date
+  - link
+
+Why:
+
+- gives the user a focused article-specific assistant instead of a generic chatbot
+
+Tradeoff:
+
+- answers degrade when NewsData content is thin
+
+## Failure-Handling Decisions
+
+### Groq Rate Limits
+
+Decision:
+
+- fall back gracefully on `429`/quota exhaustion instead of surfacing hard errors
+
+Behavior:
+
+- summary cards use local fallback cards
+- suggestions use default suggestions
+- chat returns a clean temporary quota message
+
+Why:
+
+- better mobile UX than broken cards or crashing flows
+
+### Saved Article Lookup
+
+Decision:
+
+- article detail must read from both:
+  - current feed articles
+  - saved Supabase articles
+
+Why:
+
+- a saved article may no longer be present in the latest live feed
+
+## Architecture Drift
+
+### Legacy File
 
 - `frontend/src/store/useStore.ts`
 
-Current reality:
+Current status:
 
-- the active app does not use this store
-- React context replaced it in the current implementation path
+- not part of the active app
+- still breaks TypeScript
 
-## Why There Is Architecture Drift
+Rule:
 
-The project appears to have moved through at least two phases:
-
-1. planned integration-heavy implementation
-2. fast UI/routing prototype implementation
-
-The repo now contains artifacts of both, which creates drift:
-
-- current app flow: context + mock data
-- legacy helpers: Zustand + API integration module
-
-This should be resolved by converging on one active architecture.
+- do not build new features on top of this file
 
 ## DevOps / Infrastructure Reality
 
 ### Present
 
-- npm-based frontend workflow
-- Expo local development flow
+- local Expo development flow
+- env-driven third-party integrations
 
 ### Absent
 
 - Docker
 - docker-compose
 - reverse proxy
-- caching layer
+- caching service
+- custom backend
 - CI/CD pipeline
 - deployment configuration
-- infrastructure-as-code
 
-Any documentation that implies these exist would be inaccurate.
+## Recommended Near-Term Direction
 
-## Recommended Near-Term Architecture Direction
-
-### Preferred
-
-Keep the current Expo Router structure and route ownership, but evolve the data layer incrementally:
-
-1. keep `app/**` and component structure as-is
-2. replace static article usage with a real repository/service layer
-3. replace mock auth with real Supabase auth
-4. replace in-memory saved state with persisted storage
-5. delete or migrate legacy duplicate files once live features are wired
-
-This preserves the strongest part of the current codebase: the routed UI shell.
-
-## Architecture Decisions Future AI Should Preserve
-
-1. Expo Router remains the routing backbone.
-2. Route filenames must follow dynamic bracket notation.
-3. Shared presentational logic should stay in `src/components`.
-4. Assignment-facing screens should remain visually consistent with the warm Layman theme.
-5. Do not reintroduce a monolithic single-file app structure.
+1. keep Expo Router + component structure
+2. keep Supabase for auth and saved persistence
+3. improve content enrichment before save and before chat
+4. remove or repair legacy Zustand file
+5. add test coverage around saved article reopening and AI fallback behavior

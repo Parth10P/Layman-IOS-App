@@ -2,194 +2,218 @@
 
 ## Purpose
 
-This file tracks real issues discovered in the repository, fixes already applied, and risks that remain open.
+Tracks real bugs, fixes already applied, and current risks in the active implementation.
 
 ## Fixes Already Applied
 
-### 5. Featured carousel images not visible
-
-Problem:
-- `FeaturedCarousel` component was not rendering article images
-- Cards showed only text on colored backgrounds
-
-Fix applied:
-- Added `Image` component to render `item.imageUrl` as card background
-- Added dark overlay (`shade`) for text readability over images
-- Increased card height from 220 to 260 for better content visibility
-
-Impact:
-- Featured carousel now displays article images from NewsData API
-
-### 6. Article card thumbnails showing text instead of images
-
-Problem:
-- `ArticleCard` component displayed text label in thumbnail box instead of article images
-
-Fix applied:
-- Added `Image` component to render `article.imageUrl` in thumb container
-- Falls back to text label when no image available
-
-Impact:
-- "Today's Picks" list now shows article images in square thumbnails
-
-### 7. App-wide icons using text letters instead of vector icons
-
-Problem:
-- Bottom tab bar icons were text letters ("H", "S", "P")
-- Profile and home page avatars showed text initials ("PK")
-
-Fix applied:
-- Installed `@expo/vector-icons` package
-- Updated `BottomTabBar.tsx` to use Ionicons:
-  - Home: `home` icon
-  - Saved: `bookmark` icon
-  - Profile: `person` icon
-- Updated `profile.tsx` avatar to use `person` icon (40px)
-- Updated `index.tsx` header avatar to use `person` icon (24px)
-
-Impact:
-- Consistent vector icons throughout the app
-- Icons scale perfectly on all screen sizes
-
 ### 1. Wrong Expo Router dynamic route filenames
 
-Problem:
+Fix:
 
-- main project previously used:
-  - `frontend/app/article/id.tsx`
-  - `frontend/app/chat/articleId.tsx`
-- Expo Router expects bracket syntax for dynamic routes
-
-Fix applied:
-
-- replaced with:
+- replaced old route names with:
   - `frontend/app/article/[id].tsx`
   - `frontend/app/chat/[articleId].tsx`
 
 Impact:
 
-- removed route-name mismatch warnings
-- aligned router structure with actual navigation calls
+- removed route-name mismatch issues
 
-### 2. Welcome screen rendered a phone inside the phone
+### 2. Welcome screen rendered a fake phone inside the real phone
 
-Problem:
+Fix:
 
-- welcome UI was initially implemented as a mock presentation frame inside the real device screen
-
-Fix applied:
-
-- replaced with a true full-screen welcome layout in `frontend/src/components/WelcomeHero.tsx`
+- rebuilt the welcome screen as a real full-screen mobile screen
 
 Impact:
 
-- matches actual in-app UX expectations instead of a portfolio-slide representation
+- onboarding now matches in-app UX expectations
 
-### 3. Swipe CTA was not truly swipe-driven
+### 3. Welcome CTA became truly swipeable
 
-Problem:
+Fix:
 
-- the welcome CTA visually suggested a swipe but behaved like a button
-
-Fix applied:
-
-- implemented a draggable swipe control using `PanResponder` and `Animated`
+- implemented a draggable swipe interaction
+- successful swipe routes to auth
 
 Impact:
 
-- user interaction now matches assignment intent more closely
+- interaction matches the assignment intent
 
-### 4. `SwipeableSummary` route load issue
+### 4. Featured carousel and article cards now show images
 
-Problem:
+Fix:
 
-- `SwipeableSummary.tsx` imported Reanimated in a way that contributed to route-load/runtime trouble during development
-
-Fix applied:
-
-- simplified the component to a plain horizontal `ScrollView`
+- added `Image` rendering for featured cards and list cards
+- improved text readability with image overlays
 
 Impact:
 
-- reduced boot/runtime fragility
-- article route now loads more predictably
+- article lists now visually match the design more closely
+
+### 5. Home feed now uses live NewsData articles
+
+Fix:
+
+- wired `fetchNews()` into the active Home screen
+- added load/error states
+
+Impact:
+
+- app now displays real stories instead of mock-only feed data
+
+### 6. Feed headlines now use Groq-generated conversational rewrites
+
+Fix:
+
+- added `frontend/src/lib/headlines.ts`
+- feed cards now use `displayHeadline`
+
+Impact:
+
+- headlines better match assignment tone and length constraints
+
+### 7. Article screen now uses image hero and generated layman summary cards
+
+Fix:
+
+- article hero image renders when available
+- summary cards are generated through `transformArticleForLayman()`
+
+Impact:
+
+- article detail now behaves like a true layman explainer surface
+
+### 8. Ask Layman moved from separate route to blurred modal sheet
+
+Fix:
+
+- added `AskLaymanSheet.tsx`
+- article CTA opens bottom sheet with blurred backdrop
+
+Impact:
+
+- interaction matches the assignment requirement more closely
+
+### 9. Saved screen search added
+
+Fix:
+
+- added top-right search toggle and filtering on Saved tab
+
+Impact:
+
+- saved stories are easier to browse
+
+### 10. Saved article open flow fixed
+
+Problem:
+
+- saved items could appear in the Saved list but fail on open with `Article not available`
+
+Fix:
+
+- article detail now looks in both live feed and saved Supabase records
+- `useSavedArticles.ts` normalizes article payloads before save and after fetch
+- article screen waits for saved-article loading before deciding an article is missing
+
+Impact:
+
+- saved stories can reopen reliably from the Saved tab
+
+### 11. Groq JSON parsing hardened
+
+Problem:
+
+- valid-but-messy Groq output could trigger `Invalid response from Groq`
+
+Fix:
+
+- added safer JSON extraction and flexible array parsing
+
+Impact:
+
+- article summary generation is more resilient
+
+### 12. Groq quota/rate-limit fallback added
+
+Problem:
+
+- Groq `429` responses threw hard errors and polluted logs
+
+Fix:
+
+- quota exhaustion now falls back gracefully:
+  - summary cards use local layman fallbacks
+  - question suggestions use defaults
+  - chat returns a clean temporary quota message
+
+Impact:
+
+- app remains usable during Groq quota windows
 
 ## Known Open Issues
 
-### 1. Auth screen is visual only
+### 1. Legacy TypeScript errors remain
 
-Current behavior:
+File:
 
-- auth fields update local state
-- entering the app does not authenticate against any backend
-
-Risk:
-
-- assignment expects real auth and session persistence
-
-### 2. Saved state is in memory only
-
-Current behavior:
-
-- saved article IDs live in React context only
-
-Risk:
-
-- all saved state disappears on reload/app restart
-- assignment expects persistent saved articles
-
-### 3. Home feed is still mock data
-
-Current behavior:
-
-- home screen uses `src/data/articles.ts`
-
-Risk:
-
-- product looks functional but does not consume real news data
-
-### 4. Chat is not using the real AI integration path
-
-Current behavior:
-
-- chat responses come from local heuristic logic in `app-state.tsx`
-
-Risk:
-
-- assignment expects AI-backed layman explanations
-
-### 5. Legacy architecture drift remains
-
-Files involved:
-
-- `frontend/src/lib/api.ts`
 - `frontend/src/store/useStore.ts`
 
 Risk:
 
-- future contributors may edit dead paths and think features are wired when they are not
+- `npx tsc --noEmit` remains red for unrelated legacy code
 
-### 6. README previously overstated implementation status
+### 2. NewsData content quality varies a lot
 
 Current behavior:
 
-- historical documentation referenced a backend/Supabase structure not present in the actual repo
+- some articles have strong summaries/content
+- some are too thin for high-quality Ask Layman responses
 
 Risk:
 
-- future AI or developers may assume functionality that does not exist
+- AI answers can still feel generic on poor source material
+
+### 3. Groq quota is a product dependency risk
+
+Current behavior:
+
+- app degrades gracefully, but premium AI output disappears when quota is exhausted
+
+Risk:
+
+- users may get inconsistent quality across the day unless quota or model strategy improves
+
+### 4. Chat history is not persisted
+
+Current behavior:
+
+- Ask Layman conversation lives only for the current sheet/session
+
+Risk:
+
+- closing the sheet loses the conversation
+
+### 5. Backend folder is still a placeholder
+
+Current behavior:
+
+- all live backend behavior is client-to-Supabase and client-to-third-party APIs
+
+Risk:
+
+- no server-side orchestration, caching, quota management, or observability layer
 
 ## High-Risk Areas For Future Changes
 
-1. Navigation parameters between tabs, article detail, and chat
-2. Any future migration from mock data to real APIs
-3. Reintroducing Reanimated-based gesture code without validating Babel/runtime setup
-4. Mixing Zustand and React context instead of choosing one active state model
+1. article payload shape used by both feed and saved records
+2. Groq prompt/output contracts for headlines, summaries, and chat
+3. navigation params between Home, Saved, and article detail
+4. any attempt to reintroduce a second active state system beside the current one
 
 ## Recommended Fix Order
 
-1. Wire real data into Home, Article, and Chat
-2. Implement real Supabase auth
-3. Persist saved articles
-4. Remove or migrate dead architecture files
-5. Add tests and stronger error states
+1. remove or repair `frontend/src/store/useStore.ts`
+2. strengthen article-context enrichment for saved records and chat
+3. improve Ask Layman quality on thin source articles
+4. add tests around saved-article persistence and article reopening
