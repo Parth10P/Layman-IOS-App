@@ -165,7 +165,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   brand: {
-    color: '#FFFFFF',
+    color: '#000000ff',
     fontSize: 50,
     lineHeight: 60,
     fontWeight: '800',
@@ -181,7 +181,7 @@ const styles = StyleSheet.create({
     paddingBottom: 78,
   },
   heroText: {
-    color: '#FFFFFF',
+    color: '#000000ff',
     textAlign: 'center',
     fontSize: 42,
     lineHeight: 44,
