@@ -102,6 +102,9 @@ export function AskLaymanSheet({
     setIsLoadingResponse(false);
   };
 
+  const introMessage = messages[0];
+  const conversationMessages = messages.slice(1);
+
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <View style={styles.root}>
@@ -122,7 +125,36 @@ export function AskLaymanSheet({
               showsVerticalScrollIndicator={false}
               onContentSizeChange={() => messagesScrollRef.current?.scrollToEnd({ animated: true })}
             >
-              {messages.map((message) => {
+              {introMessage ? (
+                <View
+                  key={introMessage.id}
+                  style={[styles.messageRow, styles.assistantRow]}
+                >
+                  <View style={styles.messageBadge}>
+                    <Ionicons name="sparkles" size={12} color={colors.white} />
+                  </View>
+                  <View style={[styles.messageBubble, styles.assistantBubble]}>
+                    <Text style={[styles.messageText, styles.assistantMessageText]}>
+                      {introMessage.text}
+                    </Text>
+                  </View>
+                </View>
+              ) : null}
+
+              <View style={styles.suggestionMessagesWrap}>
+                {suggestions.slice(0, 3).map((suggestion) => (
+                  <View key={suggestion} style={[styles.messageRow, styles.userRow]}>
+                    <Pressable
+                      style={[styles.messageBubble, styles.suggestionBubble]}
+                      onPress={() => handleSend(suggestion)}
+                    >
+                      <Text style={[styles.messageText, styles.suggestionText]}>{suggestion}</Text>
+                    </Pressable>
+                  </View>
+                ))}
+              </View>
+
+              {conversationMessages.map((message) => {
                 const isUser = message.role === 'user';
 
                 return (
@@ -158,19 +190,6 @@ export function AskLaymanSheet({
                   </View>
                 );
               })}
-
-              <View style={styles.suggestionMessagesWrap}>
-                {suggestions.slice(0, 3).map((suggestion) => (
-                  <View key={suggestion} style={[styles.messageRow, styles.userRow]}>
-                    <Pressable
-                      style={[styles.messageBubble, styles.suggestionBubble]}
-                      onPress={() => handleSend(suggestion)}
-                    >
-                      <Text style={[styles.messageText, styles.suggestionText]}>{suggestion}</Text>
-                    </Pressable>
-                  </View>
-                ))}
-              </View>
 
               {isLoadingResponse ? (
                 <View style={styles.loadingRow}>
