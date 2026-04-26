@@ -27,13 +27,17 @@ export default function ArticleScreen() {
   const { feedArticles, savedIds, toggleSaved } = useAppState();
   const article = feedArticles.find((entry) => entry.id === params.id) ?? null;
   const from = (params.from as TabKey | undefined) ?? 'home';
-  const [aiCards, setAiCards] = useState<string[]>(article?.cards || []);
-  const [isLoadingSummary, setIsLoadingSummary] = useState(false);
+  const [aiCards, setAiCards] = useState<string[]>([]);
+  const [isLoadingSummary, setIsLoadingSummary] = useState(Boolean(article));
   const [summaryError, setSummaryError] = useState('');
   const [isAskLaymanOpen, setIsAskLaymanOpen] = useState(false);
 
   useEffect(() => {
-    if (!article) return;
+    if (!article) {
+      setAiCards([]);
+      setIsLoadingSummary(false);
+      return;
+    }
 
     const loadSummary = async () => {
       setIsLoadingSummary(true);
@@ -150,7 +154,6 @@ export default function ArticleScreen() {
           ) : null}
         </View>
 
-        <Text style={styles.sectionTitle}>Story in simple cards</Text>
         {isLoadingSummary ? (
           <View style={styles.loadingBox}>
             <ActivityIndicator color={colors.primaryDark} />
@@ -175,7 +178,7 @@ export default function ArticleScreen() {
       </View>
 
       <AskLaymanSheet
-        article={article}
+        article={{ ...article, cards: aiCards.length ? aiCards : article.cards }}
         visible={isAskLaymanOpen}
         onClose={() => setIsAskLaymanOpen(false)}
       />

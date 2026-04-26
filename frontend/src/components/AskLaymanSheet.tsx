@@ -167,6 +167,11 @@ export function AskLaymanSheet({
                         {message.text}
                       </Text>
                     </View>
+                    {isUser ? (
+                      <View style={styles.userBadge}>
+                        <Ionicons name="person" size={14} color={colors.primary} />
+                      </View>
+                    ) : null}
                   </View>
                 );
               })}
@@ -260,6 +265,18 @@ const styles = StyleSheet.create({
     marginRight: 8,
     marginBottom: 4,
   },
+  userBadge: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: '#EFDCCB',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 8,
+    marginBottom: 4,
+  },
   messageBubble: {
     maxWidth: '82%',
     borderRadius: 18,
@@ -273,15 +290,16 @@ const styles = StyleSheet.create({
     backgroundColor: '#F8F0E6',
     borderWidth: 1,
     borderColor: '#EFDCCB',
+    maxWidth: '74%',
   },
   suggestionMessagesWrap: {
     gap: 12,
     marginTop: -2,
-    marginBottom: 2,
+    marginBottom: 6,
   },
   suggestionBubble: {
-    width: '100%',
-    maxWidth: '100%',
+    width: '92%',
+    maxWidth: '92%',
     backgroundColor: colors.primaryDark,
     borderRadius: 22,
     paddingHorizontal: 18,
@@ -323,22 +341,23 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
+    paddingBottom: 2,
   },
   input: {
     flex: 1,
-    backgroundColor: colors.surface,
+    backgroundColor: '#FFFDF9',
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: 22,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
+    borderRadius: 24,
+    paddingHorizontal: 18,
+    paddingVertical: 15,
     color: colors.text,
     fontSize: 15,
   },
   sendButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
