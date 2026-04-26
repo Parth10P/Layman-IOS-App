@@ -1,9 +1,12 @@
+import { useState } from 'react';
 import { Dimensions, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { colors } from '../theme';
 
 const { width } = Dimensions.get('window');
 
 export function SwipeableSummary({ cards }: { cards: string[] }) {
+  const [activeIndex, setActiveIndex] = useState(0);
+
   return (
     <View>
       <ScrollView
@@ -11,6 +14,11 @@ export function SwipeableSummary({ cards }: { cards: string[] }) {
         pagingEnabled
         decelerationRate="fast"
         showsHorizontalScrollIndicator={false}
+        onMomentumScrollEnd={(e) => {
+          const cardWidth = width - 48;
+          const index = Math.round(e.nativeEvent.contentOffset.x / cardWidth);
+          setActiveIndex(Math.max(0, Math.min(index, cards.length - 1)));
+        }}
       >
         {cards.map((card, index) => (
           <View key={`${index}-${card.slice(0, 12)}`} style={styles.cardWrap}>
@@ -27,7 +35,7 @@ export function SwipeableSummary({ cards }: { cards: string[] }) {
       </ScrollView>
       <View style={styles.dots}>
         {cards.map((_, index) => (
-          <View key={index} style={[styles.dot, index === 0 && styles.dotActive]} />
+          <View key={index} style={[styles.dot, index === activeIndex && styles.dotActive]} />
         ))}
       </View>
     </View>
@@ -47,7 +55,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 18,
     paddingBottom: 20,
-    minHeight: 172,
+    minHeight: 200,
   },
   count: {
     color: colors.primaryDark,

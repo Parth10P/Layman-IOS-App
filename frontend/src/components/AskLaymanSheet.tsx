@@ -8,11 +8,11 @@ import {
   Platform,
   Pressable,
   ScrollView,
-  type ScrollView as ScrollViewType,
   StyleSheet,
   Text,
   TextInput,
   View,
+  type ScrollView as ScrollViewType,
 } from 'react-native';
 import { askLayman, generateChatSuggestions } from '../lib/api';
 import { colors } from '../theme';
@@ -120,25 +120,8 @@ export function AskLaymanSheet({
               style={styles.messagesScroll}
               contentContainerStyle={styles.messagesContent}
               showsVerticalScrollIndicator={false}
-              onContentSizeChange={() =>
-                messagesScrollRef.current?.scrollToEnd({ animated: true })
-              }
+              onContentSizeChange={() => messagesScrollRef.current?.scrollToEnd({ animated: true })}
             >
-              <View style={styles.suggestionMessagesWrap}>
-                {suggestions.slice(0, 3).map((suggestion) => (
-                  <View key={suggestion} style={[styles.messageRow, styles.userRow]}>
-                    <Pressable
-                      style={[styles.messageBubble, styles.suggestionBubble]}
-                      onPress={() => handleSend(suggestion)}
-                    >
-                      <Text style={[styles.messageText, styles.suggestionText]}>
-                        {suggestion}
-                      </Text>
-                    </Pressable>
-                  </View>
-                ))}
-              </View>
-
               {messages.map((message) => {
                 const isUser = message.role === 'user';
 
@@ -176,6 +159,19 @@ export function AskLaymanSheet({
                 );
               })}
 
+              <View style={styles.suggestionMessagesWrap}>
+                {suggestions.slice(0, 3).map((suggestion) => (
+                  <View key={suggestion} style={[styles.messageRow, styles.userRow]}>
+                    <Pressable
+                      style={[styles.messageBubble, styles.suggestionBubble]}
+                      onPress={() => handleSend(suggestion)}
+                    >
+                      <Text style={[styles.messageText, styles.suggestionText]}>{suggestion}</Text>
+                    </Pressable>
+                  </View>
+                ))}
+              </View>
+
               {isLoadingResponse ? (
                 <View style={styles.loadingRow}>
                   <ActivityIndicator color={colors.primaryDark} size="small" />
@@ -194,6 +190,9 @@ export function AskLaymanSheet({
                 onSubmitEditing={() => handleSend(input)}
                 returnKeyType="send"
               />
+              <Pressable style={styles.micButton} accessibilityLabel="Voice input">
+                <Ionicons name="mic-outline" size={20} color={colors.muted} />
+              </Pressable>
               <Pressable style={styles.sendButton} onPress={() => handleSend(input)}>
                 <Ionicons name="paper-plane-outline" size={18} color={colors.white} />
               </Pressable>
@@ -287,9 +286,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#EEDFC9',
   },
   userBubble: {
-    backgroundColor: '#F8F0E6',
-    borderWidth: 1,
-    borderColor: '#EFDCCB',
+    backgroundColor: colors.primary,
+    borderWidth: 0,
     maxWidth: '74%',
   },
   suggestionMessagesWrap: {
@@ -298,17 +296,16 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   suggestionBubble: {
-    width: '92%',
-    maxWidth: '92%',
-    backgroundColor: colors.primaryDark,
+    backgroundColor: colors.primary,
     borderRadius: 22,
-    paddingHorizontal: 18,
-    paddingVertical: 14,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    maxWidth: '88%',
   },
   suggestionText: {
-    color: colors.white,
+    color: '#FFFFFF',
     fontSize: 14,
-    lineHeight: 21,
+    lineHeight: 20,
     fontWeight: '700',
   },
   messageText: {
@@ -320,7 +317,10 @@ const styles = StyleSheet.create({
     color: colors.text,
   },
   userMessageText: {
-    color: '#5C4C40',
+    color: '#FFFFFF',
+    fontSize: 14,
+    lineHeight: 21,
+    fontWeight: '600',
   },
   loadingRow: {
     flexDirection: 'row',
@@ -353,6 +353,16 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     color: colors.text,
     fontSize: 15,
+  },
+  micButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   sendButton: {
     width: 48,

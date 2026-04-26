@@ -1,10 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
+import * as WebBrowser from 'expo-web-browser';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import {
   ActivityIndicator,
   Alert,
   Image,
-  Linking,
   Pressable,
   ScrollView,
   Share,
@@ -57,17 +57,17 @@ export default function ArticleScreen() {
 
   const handleOpenSource = async () => {
     if (!article?.sourceUrl) {
-      Alert.alert('Link unavailable', 'This article does not have a source URL yet.');
+      Alert.alert('Link unavailable', 'This article does not have a source URL.');
       return;
     }
-
-    const canOpen = await Linking.canOpenURL(article.sourceUrl);
-    if (!canOpen) {
+    try {
+      await WebBrowser.openBrowserAsync(article.sourceUrl, {
+        presentationStyle: WebBrowser.WebBrowserPresentationStyle.PAGE_SHEET,
+        toolbarColor: '#FF6B35',
+      });
+    } catch (error) {
       Alert.alert('Unable to open link', 'The original article link could not be opened.');
-      return;
     }
-
-    await Linking.openURL(article.sourceUrl);
   };
 
   const handleShare = async () => {
@@ -261,10 +261,10 @@ const styles = StyleSheet.create({
   },
   headline: {
     color: colors.text,
-    fontSize: 30,
-    lineHeight: 34,
+    fontSize: 22,
+    lineHeight: 30,
     fontWeight: '800',
-    letterSpacing: -1,
+    letterSpacing: -0.8,
     marginBottom: 18,
   },
   heroImage: {

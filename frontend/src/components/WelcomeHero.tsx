@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
 import { StatusBar, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -82,7 +83,7 @@ export function WelcomeHero({ onStart }: WelcomeHeroProps) {
 
   const fillStyle = useAnimatedStyle(() => ({
     width: THUMB_SIZE + TRACK_INSET + dragX.value,
-    opacity: interpolate(dragX.value, [0, maxDrag], [0.72, 1]),
+    opacity: interpolate(dragX.value, [0, maxDrag], [0.3, 0.5]),
   }));
 
   const labelStyle = useAnimatedStyle(() => ({
@@ -94,111 +95,84 @@ export function WelcomeHero({ onStart }: WelcomeHeroProps) {
     ],
   }));
 
-  const glowTopSize = Math.min(width * 0.78, 338);
-  const glowBottomSize = Math.min(width * 0.56, 242);
   const headingTopSpacer = Math.max(44, height * 0.1);
 
   return (
-    <GestureHandlerRootView style={styles.root}>
-      <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
-        <StatusBar barStyle="dark-content" backgroundColor="#FCF5EE" />
+    <LinearGradient
+      colors={['#FFE8D0', '#FFBF86', '#FF6B35']}
+      start={{ x: 0.2, y: 0 }}
+      end={{ x: 0.8, y: 1 }}
+      style={styles.root}
+    >
+      <GestureHandlerRootView style={styles.root}>
+        <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
+          <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
 
-        <View style={styles.canvas}>
-          <View
-            style={[
-              styles.topGlow,
-              {
-                width: glowTopSize,
-                height: glowTopSize,
-                borderRadius: glowTopSize / 2,
-                top: -glowTopSize * 0.22,
-                right: -glowTopSize * 0.18,
-              },
-            ]}
-          />
-          <View
-            style={[
-              styles.bottomGlow,
-              {
-                width: glowBottomSize,
-                height: glowBottomSize,
-                borderRadius: glowBottomSize / 2,
-                bottom: 184,
-                left: -glowBottomSize * 0.18,
-              },
-            ]}
-          />
+          <View style={styles.canvas}>
+            <View style={styles.headerRow}>
+              <Text style={styles.brand}>Layman</Text>
+            </View>
 
-          <View style={styles.headerRow}>
-            <Text style={styles.brand}>Layman</Text>
+            <View style={[styles.heroBlock, { paddingTop: headingTopSpacer }]}>
+              <Text style={styles.heroText}>Business,{"\n"}tech & startups</Text>
+              <Text style={styles.heroAccent}>made simple</Text>
+            </View>
+
+            <View style={styles.footer}>
+              <GestureDetector gesture={panGesture}>
+                <View style={[styles.ctaTrack, { width: trackWidth }]}>
+                  <Animated.View style={[styles.ctaFill, fillStyle]} />
+                  <Animated.View style={[styles.ctaLabelWrap, labelStyle]}>
+                    <Text style={styles.ctaLabel}>Swipe to get started</Text>
+                  </Animated.View>
+                  <Animated.View style={[styles.thumb, thumbStyle]}>
+                    <View style={styles.thumbIconRow}>
+                      <Ionicons name="chevron-forward" size={16} color="#FF6B35" />
+                      <Ionicons
+                        name="chevron-forward"
+                        size={16}
+                        color="#FF6B35"
+                        style={styles.thumbSecondIcon}
+                      />
+                    </View>
+                  </Animated.View>
+                </View>
+              </GestureDetector>
+            </View>
           </View>
-
-          <View style={[styles.heroBlock, { paddingTop: headingTopSpacer }]}>
-            <Text style={styles.heroText}>Business,{"\n"}tech & startups</Text>
-            <Text style={styles.heroAccent}>made simple</Text>
-          </View>
-
-          <View style={styles.footer}>
-            <GestureDetector gesture={panGesture}>
-              <View style={[styles.ctaTrack, { width: trackWidth }]}> 
-                <Animated.View style={[styles.ctaFill, fillStyle]} />
-                <Animated.View style={[styles.ctaLabelWrap, labelStyle]}>
-                  <Text style={styles.ctaLabel}>Swipe to get started</Text>
-                </Animated.View>
-                <Animated.View style={[styles.thumb, thumbStyle]}>
-                  <View style={styles.thumbIconRow}>
-                    <Ionicons name="chevron-forward" size={16} color="#D97A3A" />
-                    <Ionicons name="chevron-forward" size={16} color="#D97A3A" style={styles.thumbSecondIcon} />
-                  </View>
-                </Animated.View>
-              </View>
-            </GestureDetector>
-          </View>
-        </View>
-      </SafeAreaView>
-    </GestureHandlerRootView>
+        </SafeAreaView>
+      </GestureHandlerRootView>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: '#FCF5EE',
   },
   safeArea: {
     flex: 1,
-    backgroundColor: '#FCF5EE',
   },
   canvas: {
     flex: 1,
-    backgroundColor: '#FCF5EE',
     paddingHorizontal: HORIZONTAL_PADDING,
     paddingTop: 18,
     paddingBottom: 32,
     overflow: 'hidden',
-  },
-  topGlow: {
-    position: 'absolute',
-    backgroundColor: '#F7E0BE',
-    opacity: 0.82,
-  },
-  bottomGlow: {
-    position: 'absolute',
-    backgroundColor: '#F5DFC2',
-    opacity: 0.55,
   },
   headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   brand: {
-    color: '#171412ff',
+    color: '#FFFFFF',
     fontSize: 50,
-    lineHeight: 100,
-    fontWeight: '700',
-    letterSpacing: -1.0,
-    marginLeft: 100,
-    fontFamily:"Inter",
+    lineHeight: 60,
+    fontWeight: '800',
+    letterSpacing: -1.5,
+    textAlign: 'center',
+    width: '100%',
+    marginLeft: 0,
   },
   heroBlock: {
     flex: 1,
@@ -207,22 +181,21 @@ const styles = StyleSheet.create({
     paddingBottom: 78,
   },
   heroText: {
-    color: '#211B17',
+    color: '#FFFFFF',
     textAlign: 'center',
-    fontSize: 48,
-    lineHeight: 46,
+    fontSize: 42,
+    lineHeight: 44,
     fontWeight: '700',
-    letterSpacing: -1.80,
+    letterSpacing: -1.5,
   },
   heroAccent: {
-    color: '#D97A3A',
+    color: '#FFF0CC',
     textAlign: 'center',
-    fontSize: 41,
+    fontSize: 42,
     lineHeight: 44,
     fontWeight: '800',
     letterSpacing: -1.5,
-    marginTop: -1
-    ,
+    marginTop: 2,
   },
   footer: {
     alignItems: 'center',
@@ -231,7 +204,7 @@ const styles = StyleSheet.create({
   ctaTrack: {
     height: TRACK_HEIGHT,
     borderRadius: TRACK_HEIGHT / 2,
-    backgroundColor: '#DF7B36',
+    backgroundColor: 'rgba(255,255,255,0.25)',
     justifyContent: 'center',
     overflow: 'hidden',
     shadowColor: 'rgba(133, 78, 37, 0.14)',
@@ -246,7 +219,7 @@ const styles = StyleSheet.create({
     top: 0,
     bottom: 0,
     borderRadius: TRACK_HEIGHT / 2,
-    backgroundColor: '#D4712E',
+    backgroundColor: 'rgba(255,255,255,0.18)',
   },
   ctaLabelWrap: {
     position: 'absolute',
@@ -256,7 +229,7 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   ctaLabel: {
-    color: '#FFFDF9',
+    color: '#FFFFFF',
     fontSize: 15,
     lineHeight: 18,
     fontWeight: '800',
@@ -269,7 +242,7 @@ const styles = StyleSheet.create({
     width: THUMB_SIZE,
     height: THUMB_SIZE,
     borderRadius: THUMB_SIZE / 2,
-    backgroundColor: '#FFF7F0',
+    backgroundColor: '#FFFFFF',
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: 'rgba(170, 100, 42, 0.12)',
@@ -286,14 +259,5 @@ const styles = StyleSheet.create({
   },
   thumbSecondIcon: {
     marginLeft: -7,
-  },
-  helperText: {
-    marginTop: 18,
-    color: '#8A7A70',
-    textAlign: 'center',
-    fontSize: 14,
-    lineHeight: 18,
-    fontWeight: '500',
-    letterSpacing: -0.15,
   },
 });

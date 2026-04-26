@@ -1,4 +1,14 @@
-import { Dimensions, FlatList, Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useRef, useState } from 'react';
+import {
+  Dimensions,
+  FlatList,
+  Image,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+  type ViewToken,
+} from 'react-native';
 import { colors } from '../theme';
 import type { Article } from '../types';
 
@@ -11,39 +21,63 @@ export function FeaturedCarousel({
   articles: Article[];
   onPressArticle: (articleId: string) => void;
 }) {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const flatListRef = useRef<FlatList<Article> | null>(null);
+  const onViewableItemsChanged = useRef(
+    ({ viewableItems }: { viewableItems: ViewToken<Article>[] }) => {
+      if (viewableItems.length > 0) {
+        setActiveIndex(viewableItems[0].index ?? 0);
+      }
+    }
+  ).current;
+  const viewabilityConfig = useRef({
+    itemVisiblePercentThreshold: 50,
+  }).current;
+
   return (
-    <FlatList
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      data={articles}
-      keyExtractor={(item) => item.id}
-      snapToInterval={width - 72}
-      decelerationRate="fast"
-      contentContainerStyle={styles.list}
-      renderItem={({ item }) => (
-        <Pressable style={[styles.card, { backgroundColor: item.accent }]} onPress={() => onPressArticle(item.id)}>
-          {item.imageUrl ? (
-            <Image
-              source={{ uri: item.imageUrl }}
-              style={styles.image}
-              resizeMode="cover"
-            />
-          ) : null}
-          <View style={styles.shade} />
-          <View style={styles.content}>
-            <Text style={styles.headline}>
-              {item.headline}
-            </Text>
-          </View>
-        </Pressable>
-      )}
-    />
+    <View>
+      <FlatList
+        ref={flatListRef}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        data={articles}
+        keyExtractor={(item) => item.id}
+        onViewableItemsChanged={onViewableItemsChanged}
+        viewabilityConfig={viewabilityConfig}
+        pagingEnabled={false}
+        snapToInterval={width - 72}
+        snapToAlignment="start"
+        decelerationRate="fast"
+        contentContainerStyle={styles.list}
+        renderItem={({ item }) => (
+          <Pressable style={[styles.card, { backgroundColor: item.accent }]} onPress={() => onPressArticle(item.id)}>
+            {item.imageUrl ? (
+              <Image
+                source={{ uri: item.imageUrl }}
+                style={styles.image}
+                resizeMode="cover"
+              />
+            ) : null}
+            <View style={styles.shade} />
+            <View style={styles.content}>
+              <Text style={styles.headline}>{item.headline}</Text>
+            </View>
+          </Pressable>
+        )}
+      />
+
+      <View style={styles.dotsRow}>
+        {articles.map((_, index) => (
+          <View key={index} style={[styles.dot, index === activeIndex && styles.dotActive]} />
+        ))}
+      </View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   list: {
-    paddingBottom: 26,
+    paddingBottom: 8,
   },
   card: {
     width: width - 72,
@@ -66,12 +100,6 @@ const styles = StyleSheet.create({
     padding: 22,
     paddingBottom: 24,
   },
-  kicker: {
-    color: '#FFF4EB',
-    fontSize: 12,
-    fontWeight: '700',
-    marginBottom: 8,
-  },
   headline: {
     color: '#FFFDFC',
     fontSize: 20,
@@ -79,11 +107,24 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     letterSpacing: -0.7,
   },
-  summary: {
-    color: '#FFF5EE',
-    fontSize: 13,
-    lineHeight: 19,
-    marginTop: 10,
-    maxWidth: '88%',
+  dotsRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 4,
+    marginBottom: 8,
+  },
+  dot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: colors.border,
+  },
+  dotActive: {
+    width: 20,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: colors.primary,
   },
 });

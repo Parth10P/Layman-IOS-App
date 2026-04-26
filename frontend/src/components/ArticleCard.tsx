@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { colors } from '../theme';
 import type { Article } from '../types';
@@ -17,11 +18,7 @@ export function ArticleCard({
     <Pressable style={styles.row} onPress={onPress}>
       <View style={[styles.thumb, { backgroundColor: article.accent }]}>
         {article.imageUrl ? (
-          <Image
-            source={{ uri: article.imageUrl }}
-            style={styles.thumbImage}
-            resizeMode="cover"
-          />
+          <Image source={{ uri: article.imageUrl }} style={styles.thumbImage} resizeMode="cover" />
         ) : (
           <Text style={styles.thumbLabel}>{article.imageLabel}</Text>
         )}
@@ -33,10 +30,16 @@ export function ArticleCard({
         </Text>
         <Text style={styles.meta}>{article.source}</Text>
       </View>
-      <Pressable style={[styles.savePill, saved && styles.savePillActive]} onPress={onToggleSaved}>
-        <Text style={[styles.savePillText, saved && styles.savePillTextActive]}>
-          {saved ? 'Saved' : 'Save'}
-        </Text>
+      <Pressable
+        style={[styles.bookmarkButton, saved && styles.bookmarkButtonActive]}
+        onPress={onToggleSaved}
+        accessibilityLabel={saved ? 'Remove bookmark' : 'Bookmark article'}
+      >
+        <Ionicons
+          name={saved ? 'bookmark' : 'bookmark-outline'}
+          size={18}
+          color={saved ? '#FFFFFF' : colors.primaryDark}
+        />
       </Pressable>
     </Pressable>
   );
@@ -92,21 +95,18 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 8,
   },
-  savePill: {
-    paddingHorizontal: 12,
-    paddingVertical: 9,
-    borderRadius: 14,
+  bookmarkButton: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
     backgroundColor: colors.chip,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: colors.border,
   },
-  savePillActive: {
-    backgroundColor: colors.primaryDark,
-  },
-  savePillText: {
-    color: colors.primaryDark,
-    fontSize: 12,
-    fontWeight: '800',
-  },
-  savePillTextActive: {
-    color: colors.white,
+  bookmarkButtonActive: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
   },
 });
