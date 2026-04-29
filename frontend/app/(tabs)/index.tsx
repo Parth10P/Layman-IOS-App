@@ -16,7 +16,7 @@ import { colors } from '../../src/theme';
 export default function HomeTab() {
   const router = useRouter();
   const { feedArticles, setFeedArticles } = useAppState();
-  const { savedArticles, toggleSave, isSaved, loading } = useSavedArticles();
+  const { toggleSave, isSaved } = useSavedArticles();
   const [search, setSearch] = useState('');
   const [searchOpen, setSearchOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);

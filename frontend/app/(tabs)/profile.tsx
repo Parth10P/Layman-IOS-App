@@ -111,11 +111,6 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     letterSpacing: -1.1,
   },
-  greeting: {
-    color: colors.muted,
-    fontSize: 14,
-    marginTop: 4,
-  },
   profileCard: {
     backgroundColor: colors.surface,
     borderRadius: 28,

@@ -310,12 +310,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 18,
   },
-  sectionTitle: {
-    color: colors.text,
-    fontSize: 18,
-    fontWeight: '800',
-    marginBottom: 12,
-  },
   bottomCtaWrap: {
     position: 'absolute',
     left: 24,
