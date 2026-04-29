@@ -6,62 +6,54 @@ Layman is a React Native Expo app for reading business, tech, and startup news i
 
 ```text
 Layman-IOS-App/
-  frontend/
-    app/
-      _layout.tsx
-      index.tsx
-      auth.tsx
-      article/
-        [id].tsx
-      (tabs)/
-        _layout.tsx
-        index.tsx
-        saved.tsx
-        profile.tsx
+├── frontend/
+│   ├── app/                          # Expo Router routing layer
+│   │   ├── _layout.tsx               # Root stack layout
+│   │   ├── index.tsx                 # Welcome screen
+│   │   ├── auth.tsx                  # Login/Signup screen
+│   │   ├── article/
+│   │   │   └── [id].tsx              # Article detail screen
+│   │   └── (tabs)/                   # Tab navigation group
+│   │       ├── _layout.tsx           # Tab bar layout
+│   │       ├── index.tsx             # Home screen (feed)
+│   │       ├── saved.tsx             # Saved articles screen
+│   │       └── profile.tsx           # Profile screen
+│   │
+│   ├── src/
+│   │   ├── components/               # Reusable UI components
+│   │   │   ├── ArticleCard.tsx       # Story cards for feed/saved
+│   │   │   ├── AskLaymanSheet.tsx    # AI chat modal
+│   │   │   ├── BottomTabBar.tsx      # Custom bottom navigation
+│   │   │   ├── FeaturedCarousel.tsx  # Top horizontal featured stories
+│   │   │   ├── Screen.tsx            # Screen wrapper component
+│   │   │   ├── SearchBar.tsx         # Search input (Home/Saved)
+│   │   │   ├── SwipeableSummary.tsx  # 3-card swipeable summary
+│   │   │   └── WelcomeHero.tsx       # Welcome screen + swipe CTA
+│   │   │
+│   │   ├── hooks/                    # Stateful logic & Supabase connections
+│   │   │   ├── useAuth.ts            # Supabase auth session state
+│   │   │   ├── useProfile.ts         # User profile data fetching
+│   │   │   └── useSavedArticles.ts   # Saved articles CRUD operations
+│   │   │
+│   │   ├── lib/                      # External integrations & utilities
+│   │   │   ├── api.ts                # NewsData API, Groq transformations
+│   │   │   ├── headlines.ts          # Headline rewriting logic
+│   │   │   └── supabase.ts           # Supabase client configuration
+│   │   │
+│   │   ├── state/                    # Shared app state
+│   │   │   └── app-state.tsx         # Feed articles, auth form values
+│   │   │
+│   │   ├── theme.ts                  # Shared color palette
+│   │   └── types.ts                  # TypeScript type definitions
+│   │
+│   ├── app.json                      # Expo configuration
+│   ├── babel.config.js               # Babel configuration
+│   ├── index.ts                      # App entry point
+│   ├── package.json                  # Dependencies
+│   └── tsconfig.json                 # TypeScript configuration
+│
+├── context/                          # Project documentation
 
-    src/
-      components/
-        ArticleCard.tsx
-        AskLaymanSheet.tsx
-        BottomTabBar.tsx
-        FeaturedCarousel.tsx
-        Screen.tsx
-        SearchBar.tsx
-        SwipeableSummary.tsx
-        WelcomeHero.tsx
-
-      hooks/
-        useAuth.ts
-        useProfile.ts
-        useSavedArticles.ts
-
-      lib/
-        api.ts
-        headlines.ts
-        supabase.ts
-
-      state/
-        app-state.tsx
-
-      theme.ts
-      types.ts
-
-    app.json
-    babel.config.js
-    index.ts
-    package.json
-    tsconfig.json
-
-  context/
-    CLAUDE.md
-    PROJECT_CONTEXT.md
-    CURRENT_TASK.md
-    ARCHITECTURE.md
-    BUGS_AND_FIXES.md
-    HANDOVER.md
-
-  backend/
-    package.json
 ```
 
 ## What Each Main Folder Does
