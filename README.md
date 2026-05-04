@@ -4,24 +4,20 @@ Layman is a React Native Expo app for reading business, tech, and startup news i
 
 ## App Screenshots
 
-These screenshots show the main product flow at a glance.
-
-### Welcome Screen
-
-![Welcome Screen](/assets/readme/welcome.png)
-
-### Home Screen
-
-![Home Screen](/assets/readme/home.png)
-
-### Article Detail Screen
-
-![Article Detail Screen](/assets/readme/article.png)
-
-### Ask Layman Chat
-
-![Ask Layman Chat](/assets/readme/layman%20AI.png)
->>>>>>> Stashed changes
+<table>
+  <tr>
+    <td align="center"><strong>Welcome</strong></td>
+    <td align="center"><strong>Home</strong></td>
+    <td align="center"><strong>Article Detail</strong></td>
+    <td align="center"><strong>Ask Layman</strong></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="assets/readme/welcome.png" alt="Welcome Screen" width="210" /></td>
+    <td align="center"><img src="assets/readme/home.png" alt="Home Screen" width="210" /></td>
+    <td align="center"><img src="assets/readme/article.png" alt="Article Detail Screen" width="210" /></td>
+    <td align="center"><img src="assets/readme/layman%20AI.png" alt="Ask Layman Chat" width="210" /></td>
+  </tr>
+</table>
 
 ## Project Structure
 
