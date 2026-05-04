@@ -2,6 +2,26 @@
 
 Layman is a React Native Expo app for reading business, tech, and startup news in simpler language. The app takes live news articles, rewrites the feed headlines into a more conversational style, generates short swipeable summary cards, and lets the user ask follow-up questions through an article-aware AI chat flow.
 
+## App Screenshots
+
+These screenshots show the main product flow at a glance.
+
+### Welcome Screen
+
+![Welcome Screen](/Users/patel_parthk/Desktop/Screenshot%202026-05-04%20at%201.40.27%E2%80%AFPM.png)
+
+### Home Screen
+
+![Home Screen](/Users/patel_parthk/Desktop/Screenshot%202026-05-04%20at%201.40.59%E2%80%AFPM.png)
+
+### Article Detail Screen
+
+![Article Detail Screen](/Users/patel_parthk/Desktop/Screenshot%202026-05-04%20at%201.41.19%E2%80%AFPM.png)
+
+### Ask Layman Chat
+
+![Ask Layman Chat](/Users/patel_parthk/Desktop/Screenshot%202026-05-04%20at%201.41.53%E2%80%AFPM.png)
+
 ## Project Structure
 
 ```text
