@@ -8,19 +8,23 @@ These screenshots show the main product flow at a glance.
 
 ### Welcome Screen
 
-![Welcome Screen](/Users/patel_parthk/Desktop/Screenshot%202026-05-04%20at%201.40.27%E2%80%AFPM.png)
+![Welcome Screen](<img width="418" height="868" alt="Screenshot 2026-05-04 at 1 40 27 PM" src="https://github.com/user-attachments/assets/c4df7e24-3adc-46ed-8497-236588c84d1c" />
+)
 
 ### Home Screen
 
-![Home Screen](/Users/patel_parthk/Desktop/Screenshot%202026-05-04%20at%201.40.59%E2%80%AFPM.png)
+![Home Screen](<img width="413" height="857" alt="Screenshot 2026-05-04 at 1 40 59 PM" src="https://github.com/user-attachments/assets/4c78efa1-0b00-4c69-8130-1986c3fdec5b" />
+)
 
 ### Article Detail Screen
 
-![Article Detail Screen](/Users/patel_parthk/Desktop/Screenshot%202026-05-04%20at%201.41.19%E2%80%AFPM.png)
+![Article Detail Screen](<img width="405" height="855" alt="Screenshot 2026-05-04 at 1 41 19 PM" src="https://github.com/user-attachments/assets/526ebd53-8448-4487-b14a-6513ac855971" />
+)
 
 ### Ask Layman Chat
 
-![Ask Layman Chat](/Users/patel_parthk/Desktop/Screenshot%202026-05-04%20at%201.41.53%E2%80%AFPM.png)
+![Ask Layman Chat](<img width="418" height="858" alt="Screenshot 2026-05-04 at 1 41 53 PM" src="https://github.com/user-attachments/assets/614a6218-0aff-4e7d-bb1b-bdd2b29d324d" />
+)
 
 ## Project Structure
 
