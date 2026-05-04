@@ -8,23 +8,20 @@ These screenshots show the main product flow at a glance.
 
 ### Welcome Screen
 
-![Welcome Screen](<img width="418" height="868" alt="Screenshot 2026-05-04 at 1 40 27 PM" src="https://github.com/user-attachments/assets/c4df7e24-3adc-46ed-8497-236588c84d1c" />
-)
+![Welcome Screen](/assets/readme/welcome.png)
 
 ### Home Screen
 
-![Home Screen](<img width="413" height="857" alt="Screenshot 2026-05-04 at 1 40 59 PM" src="https://github.com/user-attachments/assets/4c78efa1-0b00-4c69-8130-1986c3fdec5b" />
-)
+![Home Screen](/assets/readme/home.png)
 
 ### Article Detail Screen
 
-![Article Detail Screen](<img width="405" height="855" alt="Screenshot 2026-05-04 at 1 41 19 PM" src="https://github.com/user-attachments/assets/526ebd53-8448-4487-b14a-6513ac855971" />
-)
+![Article Detail Screen](/assets/readme/article.png)
 
 ### Ask Layman Chat
 
-![Ask Layman Chat](<img width="418" height="858" alt="Screenshot 2026-05-04 at 1 41 53 PM" src="https://github.com/user-attachments/assets/614a6218-0aff-4e7d-bb1b-bdd2b29d324d" />
-)
+![Ask Layman Chat](/assets/readme/layman%20AI.png)
+>>>>>>> Stashed changes
 
 ## Project Structure
 
